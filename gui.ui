@@ -112,7 +112,7 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>取消</string>
+       <string>分析</string>
       </property>
      </widget>
     </item>
@@ -233,12 +233,12 @@
     <addaction name="MenuSponsor"/>
     <addaction name="MenuHelp"/>
     <addaction name="separator"/>
+    <addaction name="MenuFullScreen"/>
+    <addaction name="MenuExitFullScreen"/>
+    <addaction name="separator"/>
     <addaction name="MenuwtLog"/>
     <addaction name="MenuOpen"/>
     <addaction name="MenuExit"/>
-    <addaction name="separator"/>
-    <addaction name="MenuFullScreen"/>
-    <addaction name="MenuExitFullScreen"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -263,7 +263,7 @@
   </action>
   <action name="MenuOpen">
    <property name="text">
-    <string>打开文件</string>
+    <string>分析</string>
    </property>
   </action>
   <action name="MenuExit">
@@ -293,7 +293,7 @@
   </action>
   <action name="DarkTheme">
    <property name="text">
-    <string>暗色</string>
+    <string>深色</string>
    </property>
   </action>
   <action name="Fullscreen">

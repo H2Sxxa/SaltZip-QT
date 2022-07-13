@@ -1,6 +1,6 @@
-import tarfile
+from tarfile import TarFile
+from tarfile import open as Topen
 import zipfile
-from threading import Thread
 from os.path import splitext,dirname
 from Library.Quet.lite.LiteLog import LiteLog
 
@@ -17,12 +17,12 @@ class Core():
         self.bindlog=bindlog
         self.father=fatheruse
         self.myLog=LiteLog(name=__name__)
-    def GetStart(self,filepath) -> Thread:
+    def GetStart(self,filepath):
         self.filepath=filepath
         if self.isZip:
             self.enzip(filepath)
         else:
-            self.add_log("Get Threading...")
+            self.add_log("Start unarchive now...")
             self.unzip(filepath)
     
     def unzip(self,filepath):
@@ -74,7 +74,7 @@ class Core():
     def untarfile(self,file_path,target_path=None):
         if target_path == None:
             target_path=dirname(file_path)
-        rf = tarfile.TarFile(file_path)
+        rf = TarFile(file_path)
         rf.extractall(target_path)
         self.add_log("All Successed!")
         
@@ -88,7 +88,7 @@ class Core():
     
         '''       
         try:
-            zf = tarfile.open(file)
+            zf = Topen(file)
             return False
         except Exception as e:
             return True
@@ -101,7 +101,8 @@ class Core():
         return {True:文件加密 False:文件没加密}
     
         '''
-        rf = tarfile.RarFile(file)
+        #TODO it is a rar
+        rf = TarFile(file)
         is_encrypted = rf.needs_password()
         if is_encrypted:
             return True
