@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'unt.ui'
+# Form implementation generated from reading ui file 'WigetVerifyboxGUI.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -16,9 +16,9 @@ class Ui_Form(object):
         Form.setObjectName("Form")
         Form.resize(391, 171)
         Form.setStyleSheet("")
-        self.CloseBtn = QtWidgets.QPushButton(Form)
-        self.CloseBtn.setGeometry(QtCore.QRect(133, 130, 121, 31))
-        self.CloseBtn.setObjectName("CloseBtn")
+        self.okbt = QtWidgets.QPushButton(Form)
+        self.okbt.setGeometry(QtCore.QRect(29, 130, 131, 31))
+        self.okbt.setObjectName("okbt")
         self.label = QtWidgets.QLabel(Form)
         self.label.setGeometry(QtCore.QRect(15, 10, 361, 20))
         self.label.setObjectName("label")
@@ -27,12 +27,17 @@ class Ui_Form(object):
         self.textBrowser.setObjectName("textBrowser")
         self.label_2 = QtWidgets.QLabel(Form)
         self.label_2.setGeometry(QtCore.QRect(0, 0, 391, 171))
-        self.label_2.setStyleSheet("border: 2px solid rgb(29,233,182);")
+        self.label_2.setStyleSheet("border: 2px solid rgb(39, 68, 255);")
+        self.label_2.setText("")
         self.label_2.setObjectName("label_2")
+        self.ccbt = QtWidgets.QPushButton(Form)
+        self.ccbt.setGeometry(QtCore.QRect(230, 130, 131, 31))
+        self.ccbt.setObjectName("ccbt")
         self.label_2.raise_()
-        self.CloseBtn.raise_()
+        self.okbt.raise_()
         self.label.raise_()
         self.textBrowser.raise_()
+        self.ccbt.raise_()
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -40,6 +45,6 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
-        self.CloseBtn.setText(_translate("Form", "OK"))
+        self.okbt.setText(_translate("Form", "OK"))
         self.label.setText(_translate("Form", "Title"))
-        self.label_2.setText(_translate("Form", "TextLabel"))
+        self.ccbt.setText(_translate("Form", "Cancel"))

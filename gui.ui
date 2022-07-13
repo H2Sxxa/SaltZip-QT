@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>787</width>
-    <height>561</height>
+    <width>712</width>
+    <height>375</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,22 +25,12 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="2" column="0">
-     <widget class="QLineEdit" name="lineEdit">
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;输入&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string>输入</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0">
-     <widget class="QTextBrowser" name="textBrowser"/>
-    </item>
-    <item row="18" column="0" colspan="2">
+    <item row="22" column="0" colspan="3">
      <widget class="QTextBrowser" name="LogText">
       <property name="enabled">
        <bool>true</bool>
@@ -61,60 +51,177 @@
       </property>
      </widget>
     </item>
-    <item row="12" column="0" colspan="2">
+    <item row="23" column="2">
+     <widget class="QPushButton" name="BTcontinue">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>确定</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QCheckBox" name="isSplit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>分卷压缩</string>
+      </property>
+     </widget>
+    </item>
+    <item row="18" column="0" colspan="3">
      <widget class="QProgressBar" name="progressBar">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="value">
-       <number>24</number>
+       <number>100</number>
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QRadioButton" name="radioButton">
+    <item row="15" column="0">
+     <widget class="QLabel" name="TaskLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="text">
-       <string>压缩</string>
+       <string>TASK</string>
       </property>
      </widget>
     </item>
-    <item row="9" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>TASK111</string>
+    <item row="23" column="1">
+     <widget class="QPushButton" name="BTcancel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QRadioButton" name="radioButton_3">
-      <property name="text">
-       <string>解压</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="pushButton_3">
-      <property name="text">
-       <string>继续</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QPushButton" name="pushButton_4">
       <property name="text">
        <string>取消</string>
       </property>
      </widget>
     </item>
-    <item row="17" column="0">
-     <widget class="QOpenGLWidget" name="openGLWidget"/>
+    <item row="23" column="0">
+     <widget class="QPushButton" name="ExitBT">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>退出</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="ZipCore">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <item>
+       <property name="text">
+        <string>SaltZip</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>7Zip</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>选择模式：</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QComboBox" name="ChoseMode">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <item>
+       <property name="text">
+        <string>解压</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>压缩</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;在此输入&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>使用内核：</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2" rowspan="3">
+     <widget class="QTextBrowser" name="FileInfo"/>
+    </item>
+    <item row="5" column="1">
+     <widget class="QCheckBox" name="hasPassword">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>启用密码</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>787</width>
+     <width>712</width>
      <height>23</height>
     </rect>
    </property>
@@ -129,9 +236,21 @@
     <addaction name="MenuwtLog"/>
     <addaction name="MenuOpen"/>
     <addaction name="MenuExit"/>
+    <addaction name="separator"/>
+    <addaction name="MenuFullScreen"/>
+    <addaction name="MenuExitFullScreen"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>主题</string>
+    </property>
+    <addaction name="LightTheme"/>
+    <addaction name="DarkTheme"/>
    </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
+  <widget class="QStatusBar" name="statusbar"/>
   <action name="MenuAbout">
    <property name="text">
     <string>关于</string>
@@ -165,6 +284,36 @@
   <action name="MenuHelp">
    <property name="text">
     <string>帮助</string>
+   </property>
+  </action>
+  <action name="LightTheme">
+   <property name="text">
+    <string>浅色</string>
+   </property>
+  </action>
+  <action name="DarkTheme">
+   <property name="text">
+    <string>暗色</string>
+   </property>
+  </action>
+  <action name="Fullscreen">
+   <property name="text">
+    <string>全屏</string>
+   </property>
+  </action>
+  <action name="abFullscreen">
+   <property name="text">
+    <string>退出全屏</string>
+   </property>
+  </action>
+  <action name="MenuFullScreen">
+   <property name="text">
+    <string>全屏</string>
+   </property>
+  </action>
+  <action name="MenuExitFullScreen">
+   <property name="text">
+    <string>退出全屏</string>
    </property>
   </action>
  </widget>

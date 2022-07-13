@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'unt.ui'
+# Form implementation generated from reading ui file 'WigetInputboxGUI.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -22,17 +22,18 @@ class Ui_Form(object):
         self.label = QtWidgets.QLabel(Form)
         self.label.setGeometry(QtCore.QRect(15, 10, 361, 20))
         self.label.setObjectName("label")
-        self.textBrowser = QtWidgets.QTextBrowser(Form)
-        self.textBrowser.setGeometry(QtCore.QRect(15, 30, 361, 91))
-        self.textBrowser.setObjectName("textBrowser")
         self.label_2 = QtWidgets.QLabel(Form)
         self.label_2.setGeometry(QtCore.QRect(0, 0, 391, 171))
         self.label_2.setStyleSheet("border: 2px solid rgb(39, 68, 255);")
+        self.label_2.setText("")
         self.label_2.setObjectName("label_2")
+        self.lineEdit = QtWidgets.QLineEdit(Form)
+        self.lineEdit.setGeometry(QtCore.QRect(30, 40, 331, 71))
+        self.lineEdit.setObjectName("lineEdit")
         self.label_2.raise_()
         self.CloseBtn.raise_()
         self.label.raise_()
-        self.textBrowser.raise_()
+        self.lineEdit.raise_()
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -42,4 +43,3 @@ class Ui_Form(object):
         Form.setWindowTitle(_translate("Form", "Form"))
         self.CloseBtn.setText(_translate("Form", "OK"))
         self.label.setText(_translate("Form", "Title"))
-        self.label_2.setText(_translate("Form", "TextLabel"))

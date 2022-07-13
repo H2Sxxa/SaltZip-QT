@@ -1,2 +1,2 @@
-pyuic5 -o unt.py unt.ui
+pyuic5 -o WigetInputboxGUI.py WigetInputboxGUI.ui
 pause

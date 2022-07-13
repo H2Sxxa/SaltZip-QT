@@ -42,16 +42,6 @@
     <string>Title</string>
    </property>
   </widget>
-  <widget class="QTextBrowser" name="textBrowser">
-   <property name="geometry">
-    <rect>
-     <x>15</x>
-     <y>30</y>
-     <width>361</width>
-     <height>91</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
@@ -65,13 +55,23 @@
     <string notr="true">border: 2px solid rgb(39, 68, 255);</string>
    </property>
    <property name="text">
-    <string>TextLabel</string>
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>40</y>
+     <width>331</width>
+     <height>71</height>
+    </rect>
    </property>
   </widget>
   <zorder>label_2</zorder>
   <zorder>CloseBtn</zorder>
   <zorder>label</zorder>
-  <zorder>textBrowser</zorder>
+  <zorder>lineEdit</zorder>
  </widget>
  <resources/>
  <connections/>

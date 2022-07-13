@@ -11,7 +11,9 @@ class LiteLog():
         init(autoreset=True)
         self.IFore=Fore
         self.logcache=[]
+        self.hasQTlog=False
         self.lastlog=""
+        self.lastQTlog=""
         try:
             self.style=kwargs["style"]
             if self.style not in ["D","L"]:
@@ -26,7 +28,9 @@ class LiteLog():
     #tool
     def bindQTlog(self,QTbrowser):
         self.hasQTlog=True
-        self.bingQTlog=QTbrowser
+        self.mybindQTlog=QTbrowser
+    def appendtoQT(self,log):
+        self.mybindQTlog.append(log)
     def gettime(self) -> str:
         return LiteTime.LiteTime().gettime()
 
@@ -56,7 +60,8 @@ class LiteLog():
         print(self.getFore("info")+f"[INFO | {self.name} | {now}] "+Fore.WHITE+str(msg))
         cache_log=f"[INFO | {self.name} | {now}] "+str(msg)
         if self.hasQTlog:
-            self.bingQTlog.append(cache_log)
+            self.mybindQTlog.append(cache_log)
+        self.lastQTlog=cache_log
         self.lastlog=cache_log
         self.logcache.append(cache_log)
 
@@ -66,7 +71,8 @@ class LiteLog():
         print(self.getFore("warn")+f"[WARN | {self.name} | {now}] "+Fore.YELLOW+str(msg))
         cache_log=f"[WARN | {self.name} | {now}] "+str(msg)
         if self.hasQTlog:
-            self.bingQTlog.append("<font color='yellow'>"+cache_log+"<font>")
+            self.mybindQTlog.append("<font color='yellow'>"+cache_log+"</font>")
+        self.lastQTlog="<font color='yellow'>"+cache_log+"</font>"
         self.lastlog=cache_log
         self.logcache.append(cache_log)
         
@@ -76,7 +82,8 @@ class LiteLog():
         print(self.getFore("error")+f"[ERROR | {self.name} | {now}] "+Fore.RED+str(msg))
         cache_log=f"[ERROR | {self.name} | {now}] "+str(msg)
         if self.hasQTlog:
-            self.bingQTlog.append("<font color='red'>"+cache_log+"<font>")
+            self.mybindQTlog.append("<font color='red'>"+cache_log+"</font>")
+        self.lastQTlog="<font color='red'>"+cache_log+"</font>"
         self.lastlog=cache_log
         self.logcache.append(cache_log)
 
@@ -88,18 +95,19 @@ class LiteLog():
         print(color+str(msg),end="")
         return input()
     #write log
-    def write_cache_log(self,log_path:str=None,*autologname:bool) -> None:
+    def write_cache_log(self,log_path:str=".",*autologname:bool) -> None:
         '''
         @void\n
         if 'autologname' is True or 'log_path' is None, it will get a name automatically,but you still should point the log_path to a folder(./)
         '''
-        if log_path == None:
+        if log_path == None or log_path == "":
             autologname=True
-            log_path=""
+            log_path="."
         if autologname:
-            fin_log_path=log_path+self.getlogname()
+            fin_log_path=log_path+"/"+self.getlogname()
         else:
             fin_log_path=log_path
+        self.infolog("Create "+fin_log_path)
         with open(fin_log_path,"w",encoding="utf-8") as f:
             for i in self.logcache:
                 f.write(i+"\n")
