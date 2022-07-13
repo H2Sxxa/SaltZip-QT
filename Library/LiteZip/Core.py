@@ -59,7 +59,7 @@ class Core():
             
     def Eunzip(self,zip_file_path,pwd=None,target_path=None):
         if target_path == None:
-            target_path=dirname(zip_file)
+            target_path=dirname(zip_file_path)
         zip_file = self.support_gbk(zipfile.ZipFile(zip_file_path))
         zip_list = zip_file.namelist()
         for f in zip_list:

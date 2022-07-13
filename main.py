@@ -6,7 +6,7 @@ from PyQt5.QtGui import QCursor
 
 from gui import Ui_MainWindow
 from Library.Quet.lite import LiteLog
-from Library.IQtTool import WigetMessagebox,WigetVerifyBox,WigetInputbox
+from Library.IQtTool import WigetMessagebox,WigetVerifyBox,WigetInputbox,WigetCombobox
 from Library.LiteZip import Core
 
 
@@ -95,8 +95,10 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             self.myCoreOpearte.GetStart(QFileDialog.getOpenFileName(self,"选择压缩文件",getcwd()))
     def callforapassword(self):
         self.TaskLabel.setText("当前任务：需要密码")
-        self.wib=WigetInputbox.WigetInputbox(title="该文件受到加密,请输入密码",Sobject=self)
+        self.wib=WigetInputbox.WigetInputbox(title="该文件受到加密,请输入密码",calllitelog=self.myLog,callmethod=self.getpassword)
         self.wib.show()
+    def callforafolder(self):
+        self.wcb=WigetCombobox.WigetCombobox("选择模式")
     def getpassword(self,password):
         if self.myCoreOpearte.isZip:
             pass

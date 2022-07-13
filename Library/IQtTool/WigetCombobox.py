@@ -1,23 +1,26 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
-from .WigetInputboxGUI import Ui_Form
-class WigetInputbox(QWidget,Ui_Form):
-    def __init__(self,title="",parent=None,calllitelog=None,callmethod=None) -> None:
-        super(WigetInputbox,self).__init__(parent=parent)
+from .WigetComboboxGUI import Ui_Form
+class WigetCombobox(QWidget,Ui_Form):
+    def __init__(self,title="",parent=None,Sobject=None,ChoiceList:list=[],callmethod=None) -> None:
+        super(WigetCombobox,self).__init__(parent=parent)
         self.setupUi(self)
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowFlag(Qt.FramelessWindowHint)
-        self.setWindowTitle("InputBox")
+        self.setWindowTitle("ComboBox")
         self.title=title
         self.setColor()
-        self.calllitelog=calllitelog
-        self.CloseBtn.clicked.connect(self.okchoice)
         self.callmethod=callmethod
+        if ChoiceList !=[]:
+            for Choice,num in zip(ChoiceList,range(len(ChoiceList))):
+                self.comboBox.addItem("")
+                self.comboBox.setItemText(num, Choice)
+        self.Sobject=Sobject
+        self.CloseBtn.clicked.connect(self.okchoice)
     def okchoice(self):
-        self.calllitelog.infolog("Password as "+self.lineEdit.text())
-        #use method(self,str) to receive
-        self.callmethod(self.lineEdit.text())
+        self.Sobject.myLog.infolog("Password as "+self.lineEdit.text())
+        self.callmethod(...)
         self.close()
     def setColor(self,color:str="#4DD0E1"):
         self.label.setText(f"<font color='{color}'>"+self.title+"<font>")

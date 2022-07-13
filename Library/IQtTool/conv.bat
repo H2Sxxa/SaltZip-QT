@@ -1,2 +1,2 @@
-pyuic5 -o WigetInputboxGUI.py WigetInputboxGUI.ui
+pyuic5 -o WigetComboboxGUI.py WigetComboboxGUI.ui
 pause
