@@ -26,7 +26,7 @@ class WigetCombobox(QWidget,Ui_Form):
         if self.calllog != None:
             self.myLog.infolog("Chose as "+self.comboBox.itemText(self.comboBox.currentIndex()))
             self.calllog.appendtoQT(self.myLog.lastQTlog)
-            self.calllog.logcache(self.myLog.lastlog)
+            self.calllog.logcache.append(self.myLog.lastlog)
         self.callmethod(self.comboBox.itemText(self.comboBox.currentIndex()))
         self.close()
     def setColor(self,color:str="#4DD0E1"):

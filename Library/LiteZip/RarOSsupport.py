@@ -9,14 +9,23 @@ class RarOSsupport():
         with popen(self.RarLC+" "+command) as pipe:
             msg=pipe.read()
             return msg
-        
+    def extractrar(self,location,out,pwd=None):
+        if pwd != None:
+            return self.cmdhandle(f"x -o+ -p{pwd} {location} {location}")
+        else:
+            return self.cmdhandle(f"x -o+ {location} {out}")
     def mkrar(self,location,out,pwd=None):
         if pwd != None:
-            return self.cmdhandle(f"a -r -o+ -p{pwd} \"{out}\" \"{location}\"")
+            return self.cmdhandle(f"a -r -ep1 -o+ -p{pwd} \"{out}\" \"{location}\"")
         else:
-            return self.cmdhandle(f"a -r \"{out}\" \"{location}\"")
+            return self.cmdhandle(f"a -r -ep1 -o+ \"{out}\" \"{location}\"")
     def mkVolumerar(self,location,out,pwd=None,blocksize=None):
-        return
+        if pwd != None:
+            print(f"a -r -o+ -ep1 -v{blocksize} -p{pwd} \"{out}\" \"{location}\"")
+            return self.cmdhandle(f"a -r -o+ -v{blocksize} -p{pwd} \"{out}\" \"{location}\"")
+        else:
+            print(f"a -r -ep1 -o+ -v{blocksize} \"{out}\" \"{location}\"")
+            return self.cmdhandle(f"a -r -v{blocksize} \"{out}\" \"{location}\"")
     def fixrar(self,location,bindlog:LiteLog=None,callsavepath=""):
         if location == "":
             bindlog.warnlog("A illegal file path!")

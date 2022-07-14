@@ -16,7 +16,7 @@ class WigetInputbox(QWidget,Ui_Form):
         self.CloseBtn.clicked.connect(self.okchoice)
     def okchoice(self):
         if self.calllog != None:
-            self.calllog.infolog("Password as "+self.lineEdit.text())
+            self.calllog.infolog("Input as "+self.lineEdit.text())
         self.callmethod(self.lineEdit.text())
         self.close()
     def setColor(self,color:str="#4DD0E1"):

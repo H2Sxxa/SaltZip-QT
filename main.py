@@ -115,7 +115,10 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
     def callforgziptype(self):
         self.wcb=WigetCombobox.WigetCombobox("选择模式",ChoiceList=["zip","tar","rar"],calllog=self.myLog,callmethod=self.getgziptype)
         self.wcb.show()
-        
+    def callforrarpwdsplit(self,blksize):
+        self.myCoreOpearte.setuppwdsplit(blksize)
+        self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.callforpwdsplit)
+        self.wib.show()
     def getgziptype(self,gziptype:str):
         if gziptype == "zip":
             if self.haspassword and self.myCoreOpearte.ZipCore == "SaltZip":
@@ -136,13 +139,16 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             else:
                 self.myCoreOpearte.batch_tar(self.myCoreOpearte.filepath)
         if gziptype == "rar":
-            if self.haspassword and self.myCoreOpearte.ZipCore == "SaltZip":
+            if self.haspassword and self.myCoreOpearte.ZipCore == "SaltZip" and not self.ifsplit:
                 self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.call_pwd_rar)
                 self.wib.show()
-                
             elif self.ifsplit and self.myCoreOpearte.ZipCore =="SaltZip":
-                self.Qmb=WigetMessagebox.WigetMessagebox(desc=["由于管道流特性导致RarFile分卷压缩无法实现","解决方案:尝试使用7Zip内核并重试以创建分卷Rar"],title="警告")
-                self.Qmb.show()
+                if self.haspassword:
+                    self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.callforrarpwdsplit)
+                    self.wib.show()
+                else:
+                    self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.myCoreOpearte.callforrarsplit)
+                    self.wib.show()
             else:
                 self.myCoreOpearte.batch_rar(self.myCoreOpearte.filepath)
     def getpassword(self,password):

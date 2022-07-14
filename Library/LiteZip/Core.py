@@ -76,6 +76,20 @@ class Core():
     def enzip(self):
         self.gzip_call_gziptype()
     #gzip
+    def callforrarsplit(self,blocksize,pwd=None):
+        zip_file=None
+        if zip_file == None and not os.path.isdir(self.filepath):
+            zip_file=self.filepath.replace(os.path.splitext(self.filepath)[-1],"")
+        elif zip_file == None and os.path.isdir(self.filepath):
+            zip_file=self.filepath
+        msg=self.rar.mkVolumerar(self.filepath,zip_file+".rar",pwd=pwd,blocksize=blocksize)
+        self.bindlog.appendtoQT(msg)
+        self.bindlog.logcache.append(msg)
+    def setuppwdsplit(self,blocksize):
+        self.blocksize=blocksize
+    def callforpwdsplit(self,pwd):
+        self.callforrarsplit(self.blocksize,pwd)
+        
     def call_pwd_rar(self,pwd):
         zip_file=None
         if zip_file == None and not os.path.isdir(self.filepath):
@@ -83,8 +97,8 @@ class Core():
         elif zip_file == None and os.path.isdir(self.filepath):
             zip_file=self.filepath
         msg=self.rar.mkrar(self.filepath,zip_file+".rar",pwd=pwd)
-        print(msg)
         self.bindlog.appendtoQT(msg)
+        self.bindlog.logcache.append(msg)
     def batch_rar(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"")
@@ -93,6 +107,7 @@ class Core():
         target=zip_file+'.rar'
         msg=self.rar.mkrar(start_dir,target)
         self.bindlog.appendtoQT(msg)
+        self.bindlog.logcache.append(msg)
     def batch_zip(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"")
@@ -189,7 +204,10 @@ class Core():
                     zip_file.extract(f,target_path)
             except Exception as e:
                 self.add_errorlog(str(e))
-                self.add_log("May be it is a illegal archive")
+                self.add_log("May be it is a illegal archive,dont worry,it will use unrar.exe to handle it")
+                msg=self.rar.extractrar(file_path,target_path,pwd)
+                self.bindlog.appendtoQT(msg)
+                self.bindlog.logcache.append(msg)
                 break
         zip_file.close()
         self.add_log("All Successed!")
