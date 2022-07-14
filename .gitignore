@@ -127,7 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-conv.*
-*.bat
-*.ink
+
+
+/*.bat
+designer.exe.lnk
 test

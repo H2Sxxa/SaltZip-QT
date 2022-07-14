@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 from .WigetInputboxGUI import Ui_Form
 class WigetInputbox(QWidget,Ui_Form):
-    def __init__(self,title="",parent=None,calllitelog=None,callmethod=None) -> None:
+    def __init__(self,title="",parent=None,calllog=None,callmethod=None) -> None:
         super(WigetInputbox,self).__init__(parent=parent)
         self.setupUi(self)
         self.setWindowModality(Qt.ApplicationModal)
@@ -11,12 +11,12 @@ class WigetInputbox(QWidget,Ui_Form):
         self.setWindowTitle("InputBox")
         self.title=title
         self.setColor()
-        self.calllitelog=calllitelog
-        self.CloseBtn.clicked.connect(self.okchoice)
+        self.calllog=calllog
         self.callmethod=callmethod
+        self.CloseBtn.clicked.connect(self.okchoice)
     def okchoice(self):
-        self.calllitelog.infolog("Password as "+self.lineEdit.text())
-        #use method(self,str) to receive
+        if self.calllog != None:
+            self.calllog.infolog("Password as "+self.lineEdit.text())
         self.callmethod(self.lineEdit.text())
         self.close()
     def setColor(self,color:str="#4DD0E1"):

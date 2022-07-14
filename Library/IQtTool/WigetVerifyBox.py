@@ -3,8 +3,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 from .WigetVerifyboxGUI import Ui_Form
 class WigetVerifybox(QWidget,Ui_Form):
-    def __init__(self,desc=[""],title="",parent=None,Sobject=None) -> None:
+    def __init__(self,desc=[""],title="",parent=None,callmethod=None) -> None:
         super(WigetVerifybox,self).__init__(parent=parent)
+        self.m_flag=False
         self.setupUi(self)
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowFlag(Qt.FramelessWindowHint)
@@ -15,11 +16,11 @@ class WigetVerifybox(QWidget,Ui_Form):
             self.textBrowser.append(descline)
         self.okbt.clicked.connect(self.okchoice)
         self.ccbt.clicked.connect(self.ccchoice)
-        self.Sobject=Sobject
+        self.callmethod=callmethod
         #self.setStyleSheet("border: 1px solid black;")
     def okchoice(self):
         self.close()
-        self.Sobject.close()
+        self.callmethod()
     def ccchoice(self):
         self.close()
     def setColor(self,color:str="#4DD0E1"):

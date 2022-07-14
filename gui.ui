@@ -247,8 +247,15 @@
     <addaction name="LightTheme"/>
     <addaction name="DarkTheme"/>
    </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>其他</string>
+    </property>
+    <addaction name="FixRar"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="MenuAbout">
@@ -314,6 +321,11 @@
   <action name="MenuExitFullScreen">
    <property name="text">
     <string>退出全屏</string>
+   </property>
+  </action>
+  <action name="FixRar">
+   <property name="text">
+    <string>修复压缩包</string>
    </property>
   </action>
  </widget>

@@ -31,6 +31,11 @@ class LiteLog():
         self.mybindQTlog=QTbrowser
     def appendtoQT(self,log):
         self.mybindQTlog.append(log)
+    def logContectHandle(self,litelog:None):
+        self.logcache.append(litelog.lastlog)
+        if self.hasQTlog:
+            self.mybindQTlog.append(litelog.lastQTlog)
+        
     def gettime(self) -> str:
         return LiteTime.LiteTime().gettime()
 
@@ -60,7 +65,7 @@ class LiteLog():
         print(self.getFore("info")+f"[INFO | {self.name} | {now}] "+Fore.WHITE+str(msg))
         cache_log=f"[INFO | {self.name} | {now}] "+str(msg)
         if self.hasQTlog:
-            self.mybindQTlog.append(cache_log)
+            self.mybindQTlog.append("<font>"+cache_log+"</font>")
         self.lastQTlog=cache_log
         self.lastlog=cache_log
         self.logcache.append(cache_log)
@@ -110,4 +115,4 @@ class LiteLog():
         self.infolog("Create "+fin_log_path)
         with open(fin_log_path,"w",encoding="utf-8") as f:
             for i in self.logcache:
-                f.write(i+"\n")
+                f.write(str(i)+"\n")
