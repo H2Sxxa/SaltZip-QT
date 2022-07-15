@@ -1,8 +1,9 @@
 import sys
+import ctypes
 from os import getcwd,environ
 from PyQt5.QtWidgets import QApplication, QMainWindow,QFileDialog
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QCursor
+from PyQt5.QtGui import QCursor,QIcon
 from Library.LiteZip.RarOSsupport import RarOSsupport
 
 from gui import Ui_MainWindow
@@ -15,6 +16,7 @@ from qt_material import apply_stylesheet,list_themes
 class SALTZIP(QMainWindow,Ui_MainWindow):
     def __init__(self,myLog=LiteLog.LiteLog(name=__name__), parent=None) -> None:
         super(SALTZIP,self).__init__(parent)
+        self.maxthread=1
         self.myLog=myLog
         self.rar=RarOSsupport("rar.exe")
         self.m_flag=False
@@ -22,12 +24,15 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.setupUi(self)
         self.setWindowTitle("SaltZip")
         self.mainsetup()
+        self.setWindowIcon(QIcon("./Data/favicon.ico"))
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
         self.TaskLabel.setText("当前任务：启动")
         self.myLog.bindQTlog(self.LogText)
         self.myLog.infolog("Setup UI successfully")
         #bind Menu
         self.MenuswichDL.triggered.connect(self.myTheme)
         self.MenuswichTheme.triggered.connect(self.swichTheme)
+        self.MenuSetThread.triggered.connect(self.setupwibtothread)
         self.MenuFullScreen.triggered.connect(self.showFullScreen)
         self.MenuExitFullScreen.triggered.connect(self.showNormal)
         self.MenuAbout.triggered.connect(self.about)
@@ -38,6 +43,9 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         #button
         self.ExitBT.clicked.connect(self.choseVerify)
         self.BTcontinue.clicked.connect(self.loadAll)
+        #info
+        self.wmb=WigetMessagebox.WigetMessagebox(["此版本为DEMO 0版本","请勿用于正常生产开发中使用","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
+        self.wmb.show()
     def mainsetup(self):
         self.setWindowFlag(Qt.FramelessWindowHint)
     def swichTheme(self):
@@ -117,11 +125,15 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         if self.myMode == "解压":
             self.TaskLabel.setText("当前任务：解压")
             self.myCoreOpearte=Core.Core(self.myCore,False,self.haspassword,self.ifsplit,self.myLog)
+            self.myCoreOpearte.maxThread=self.maxthread
+            self.myCoreOpearte.setProcesssafe(app=app)
             self.myCoreOpearte.setRarlocation("rar.exe")
             self.myCoreOpearte.GetStart(QFileDialog.getOpenFileName(self,"选择解压文件",getcwd()),ungzip_call_password_method=self.callforapassword)
         elif self.myMode == "压缩":
             self.TaskLabel.setText("当前任务：压缩")
             self.myCoreOpearte=Core.Core(self.myCore,True,self.haspassword,self.ifsplit,self.myLog)
+            self.myCoreOpearte.maxThread=self.maxthread
+            self.myCoreOpearte.setProcesssafe(app=app)
             self.myCoreOpearte.setRarlocation("rar.exe")
             self.callforisdir()
     def callforisdir(self):
@@ -177,6 +189,21 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
                     self.wib.show()
             else:
                 self.myCoreOpearte.batch_rar(self.myCoreOpearte.filepath)
+    def setMaxThread(self,threadnum):
+        if threadnum == "":
+            return
+        try:
+            threadnum=int(threadnum)
+        except Exception as e:
+            self.myLog.errorlog(str(e))
+            return
+        if threadnum < 1:
+            self.myLog.warnlog("Max thread must > 1")
+            return
+        self.maxthread=threadnum
+    def setupwibtothread(self):
+        self.wib=WigetInputbox.WigetInputbox(title="当前最大线程数 %s" % self.maxthread,calllog=self.myLog,callmethod=self.setMaxThread,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+        self.wib.show()
     def getpassword(self,password):
         if self.myCoreOpearte.isZip:
             pass
@@ -213,6 +240,7 @@ if __name__ == '__main__':
         #ui.myLog.errorlog(str(e))
     finally:
         pass
+
         """
         ['dark_amber.xml',
  'dark_blue.xml',

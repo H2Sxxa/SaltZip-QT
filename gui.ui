@@ -252,6 +252,7 @@
      <string>其他</string>
     </property>
     <addaction name="FixRar"/>
+    <addaction name="MenuSetThread"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -326,6 +327,11 @@
   <action name="FixRar">
    <property name="text">
     <string>修复压缩包</string>
+   </property>
+  </action>
+  <action name="MenuSetThread">
+   <property name="text">
+    <string>设置线程数</string>
    </property>
   </action>
  </widget>

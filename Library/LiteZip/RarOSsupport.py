@@ -11,7 +11,7 @@ class RarOSsupport():
             return msg
     def extractrar(self,location,out,pwd=None):
         if pwd != None:
-            return self.cmdhandle(f"x -o+ -p{pwd} {location} {location}")
+            return self.cmdhandle(f"x -o+ -p{pwd} {location} {out}")
         else:
             return self.cmdhandle(f"x -o+ {location} {out}")
     def mkrar(self,location,out,pwd=None):

@@ -1,8 +1,9 @@
-from tarfile import TarFile
+from tarfile import TarFile,is_tarfile
+from threading import Thread,activeCount
 from pyzipper import AESZipFile
-from zipfile import ZipFile
-from rarfile import RarFile
-from py7zr import SevenZipFile
+from zipfile import ZipFile,is_zipfile
+from rarfile import RarFile,is_rarfile
+from py7zr import SevenZipFile,is_7zfile
 import os
 from Library.Quet.lite.LiteLog import LiteLog
 from . import RarOSsupport
@@ -12,6 +13,7 @@ class Core():
             self.haslog=True
         else:
             self.haslog=False
+        self.maxThread=1
         self.processbar=processbar
         self.ZipCore=ZipCore
         self.haspassword=haspassword
@@ -21,7 +23,26 @@ class Core():
         self.myLog=LiteLog(name=__name__)
     def setRarlocation(self,rarloction="rar.exe"):
         self.rar=RarOSsupport.RarOSsupport(rarloction)
+    def setProcesssafe(self,app):
+        self.processingEvents=app.processEvents
+    def detect_ziptype(self,filepath):
+        if is_tarfile(filepath):
+            self.add_log("Detect as a tar")
+            return ".tar"
+        elif is_rarfile(filepath):
+            self.add_log("Detect as a rar")
+            return ".rar"
+        elif is_zipfile:
+            self.add_log("Detect as a zip")
+            return ".zip"
+        elif is_7zfile:
+            self.add_log("Detect as a 7z")
+            return ".7z"
+        else:
+            self.add_errorlog("Unknown format")
+            return None
     def GetStart(self,filepath,ungzip_call_password_method=None,gzip_call_password_method=None,gzip_call_gziptype=None):
+        self.add_log("Max thread is "+str(self.maxThread))
         self.gzip_call_gziptype=gzip_call_gziptype
         self.ungzip_call_password_method=ungzip_call_password_method
         self.gzip_call_password_method=gzip_call_password_method
@@ -41,7 +62,12 @@ class Core():
     
     def unzip(self,filepath):
         self.filepath=filepath
-        ext=os.path.splitext(filepath)[-1]
+        ext=os.path.splitext(filepath)[-1] 
+        if ext not in [".tar",".rar",".zip",".7z"]:
+            self.add_log("A unknown filetype,don't worry,it will detect for you")
+            ext=self.detect_ziptype(filepath)
+            if ext == None:
+                return
         self.ext=ext
         self.add_log("Identify as "+ext)
         try:
@@ -152,12 +178,12 @@ class Core():
     def add_log(self,msg):
         if self.bindlog != None:
             self.myLog.infolog(msg)
-            self.bindlog.logcache.append(msg)
+            self.bindlog.logcache.append(self.myLog.lastlog)
             self.bindlog.appendtoQT(self.myLog.lastQTlog)
     def add_errorlog(self,msg):
         if self.bindlog != None:
             self.myLog.errorlog(msg)
-            self.bindlog.logcache.append(msg)
+            self.bindlog.logcache.append(self.myLog.lastlog)
             self.bindlog.appendtoQT(self.myLog.lastQTlog)
     #Ungzip
     def un7zfile(self,zip_file_path,pwd=None,target_path=None):
@@ -171,8 +197,13 @@ class Core():
         
         for f in zip_list:
             self.add_log("Extract "+f)
+            while activeCount() > self.maxThread:
+                self.processingEvents()
             zip_file.reset()
-            zip_file.extract(path=target_path,targets=[f])
+            myThread=Thread(target=zip_file.extract,args=(target_path,[f]))
+            myThread.start()
+        while activeCount() != 1:
+            self.processingEvents()
         zip_file.close()
         self.add_log("All Successed!")
     def unzipfile(self,zip_file_path,pwd=None,target_path=None):
@@ -184,20 +215,32 @@ class Core():
         for f in zip_list:
             if pwd != None:
                 try:
-                    zip_file.extract(f,target_path,pwd.encode("utf-8"))
+                    while activeCount() > self.maxThread:
+                        self.processingEvents()
+                    myThread = Thread(target=zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
+                    myThread.start()
                     self.add_log("Extract "+f)
                 except Exception as e:
                     if zip_list[0] == f:
                         self.add_errorlog(str(e))
                         self.add_log("Don't worry,it will try to use AES-256 to ungzip it.")
                     self.add_log("Extract "+f)
-                    aes_zip_file.extract(f,target_path,pwd=pwd.encode("utf-8"))
+                    while activeCount() > self.maxThread:
+                        self.processingEvents()
+                    myThread = Thread(target=aes_zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
+                    myThread.start()
                 finally:
                     pass
             else:
-                zip_file.extract(f,target_path)
-        zip_file.close()
+                while activeCount() > self.maxThread:
+                    self.processingEvents()
+                myThread = Thread(target=zip_file.extract,args=(f,target_path))
+                myThread.start()
+                self.add_log("Extract "+f)
+        while activeCount() != 1:
+            self.processingEvents()
         self.add_log("All Successed!")
+        zip_file.close()
     def untarfile(self,file_path,target_path=None):
         if target_path == None:
             target_path=os.path.dirname(file_path)
@@ -206,13 +249,18 @@ class Core():
         for f in rf_list:
             self.add_log("Extract "+f)
             try:
-                rf.extract(f,target_path)
+                while activeCount() > self.maxThread:
+                    self.processingEvents()
+                myThread = Thread(target=rf.extract,args=(f,target_path))
+                myThread.start()
             except Exception as e:
                 self.add_errorlog(str(e))
                 self.add_log("May be it is a illegal archive")
                 break
-        #rf.extractall(target_path)
+        while activeCount() != 1:
+            self.processingEvents()
         self.add_log("All Successed!")
+        rf.close()
     def unrarfile(self,file_path,pwd=None,target_path=None):
         if target_path == None:
             target_path=os.path.dirname(file_path)
@@ -222,9 +270,16 @@ class Core():
             self.add_log("Extract "+f)
             try:
                 if pwd != None:
-                    zip_file.extract(f,target_path,pwd.encode("utf-8"))
+                    while activeCount() > self.maxThread:
+                        self.processingEvents()
+                    myThread = Thread(target=zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
+                    myThread.start()
                 else:
-                    zip_file.extract(f,target_path)
+                    while activeCount() > self.maxThread:
+                        self.processingEvents()
+                    myThread = Thread(target=zip_file.extract,args=(f,target_path))
+                    myThread.start()
+                    #zip_file.extract(f,target_path)
             except Exception as e:
                 self.add_errorlog(str(e))
                 self.add_log("May be it is a illegal archive,dont worry,it will use unrar.exe to handle it")
@@ -232,9 +287,10 @@ class Core():
                 self.bindlog.appendtoQT(msg)
                 self.bindlog.logcache.append(msg)
                 break
-        zip_file.close()
+        while activeCount() != 1:
+            self.processingEvents()
         self.add_log("All Successed!")
-        
+        zip_file.close()
     #check password
     def check_7z(self,mfile:str) -> bool:
         sf=SevenZipFile(mfile)
