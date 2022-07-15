@@ -17,8 +17,8 @@ class WigetInputbox(QWidget,Ui_Form):
     def okchoice(self):
         if self.calllog != None:
             self.calllog.infolog("Input as "+self.lineEdit.text())
-        self.callmethod(self.lineEdit.text())
         self.close()
+        self.callmethod(self.lineEdit.text())
     def setColor(self,color:str="#00bcd4"):
         self.label.setText(f"<font color='{color}'>"+self.title+"<font>")
         self.label_2.setStyleSheet(f"border: 2px solid {color};")

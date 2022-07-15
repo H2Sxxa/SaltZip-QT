@@ -27,8 +27,8 @@ class WigetCombobox(QWidget,Ui_Form):
             self.myLog.infolog("Chose as "+self.comboBox.itemText(self.comboBox.currentIndex()))
             self.calllog.appendtoQT(self.myLog.lastQTlog)
             self.calllog.logcache.append(self.myLog.lastlog)
-        self.callmethod(self.comboBox.itemText(self.comboBox.currentIndex()))
         self.close()
+        self.callmethod(self.comboBox.itemText(self.comboBox.currentIndex()))
     def setColor(self,color:str="#00bcd4"):
         self.label.setText(f"<font color='{color}'>"+self.title+"<font>")
         self.label_2.setStyleSheet(f"border: 2px solid {color};")

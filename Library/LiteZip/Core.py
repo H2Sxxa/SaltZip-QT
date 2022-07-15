@@ -5,6 +5,7 @@ from zipfile import ZipFile,is_zipfile
 from rarfile import RarFile,is_rarfile
 from py7zr import SevenZipFile,is_7zfile
 import os
+import traceback
 from Library.Quet.lite.LiteLog import LiteLog
 from . import RarOSsupport
 class Core():
@@ -73,7 +74,7 @@ class Core():
         try:
             if ext == ".zip":
                 if self.ZipCore == "SaltZip":
-                    if self.check_zip(filepath):
+                    if self.ck2_zip(filepath) or self.check_zip(filepath):
                         self.ungzip_call_password_method()
                     else:
                         self.unzipfile(filepath)
@@ -120,6 +121,7 @@ class Core():
         self.bindlog.logcache.append(msg)
     def setuppwdsplit(self,blocksize):
         self.blocksize=blocksize
+        
     def callforpwdsplit(self,pwd):
         self.callforrarsplit(self.blocksize,pwd)
         
@@ -193,6 +195,12 @@ class Core():
             zip_file = SevenZipFile(zip_file_path)
         else:
             zip_file = SevenZipFile(zip_file_path,password=pwd)
+            try:
+                zip_file.testzip()
+            except Exception as e:
+                self.add_errorlog(str(e))
+                self.add_errorlog("ERROR PASSWORD")
+                return
         zip_list = zip_file.getnames()
         
         for f in zip_list:
@@ -215,6 +223,14 @@ class Core():
         for f in zip_list:
             if pwd != None:
                 try:
+                    zip_file.setpassword(pwd=pwd.encode("utf-8"))
+                    zip_file.testzip()
+                except Exception as e:
+                    self.add_errorlog(str(e))
+                    if "Bad password" in str(e):
+                        self.add_errorlog("ERROR PASSWORD")
+                    return
+                try:
                     while activeCount() > self.maxThread:
                         self.processingEvents()
                     myThread = Thread(target=zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
@@ -229,6 +245,7 @@ class Core():
                         self.processingEvents()
                     myThread = Thread(target=aes_zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
                     myThread.start()
+                    myThread.exc
                 finally:
                     pass
             else:
@@ -270,6 +287,12 @@ class Core():
             self.add_log("Extract "+f)
             try:
                 if pwd != None:
+                    try:
+                        zip_file.testrar(pwd=pwd)
+                    except Exception as e:
+                        self.add_errorlog(str(e))
+                        self.add_errorlog("ERROR PASSWORD")
+                        return
                     while activeCount() > self.maxThread:
                         self.processingEvents()
                     myThread = Thread(target=zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
@@ -304,7 +327,13 @@ class Core():
         '''
         rf = RarFile(mfile)
         return rf.needs_password()
-        
+    def ck2_zip(self,mfile:str) -> bool:
+        zf=ZipFile(mfile)
+        try:
+            zf.testzip()
+            return False
+        except RuntimeError as e:
+            return True
     def check_zip(self,mfile: str) -> bool:
         '''
         name: 

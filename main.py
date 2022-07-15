@@ -16,7 +16,7 @@ from qt_material import apply_stylesheet,list_themes
 class SALTZIP(QMainWindow,Ui_MainWindow):
     def __init__(self,myLog=LiteLog.LiteLog(name=__name__), parent=None) -> None:
         super(SALTZIP,self).__init__(parent)
-        self.maxthread=1
+        self.maxthread=3
         self.myLog=myLog
         self.rar=RarOSsupport("rar.exe")
         self.m_flag=False
@@ -107,6 +107,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             self.wvb.close()
         except:
             pass
+        exit(0)
     def sponsor(self):
         self.Qmb=WigetMessagebox.WigetMessagebox(desc=["如果您觉得这个项目不错，不妨打个赏","https://afdian.net/@H2Sxxa"],title="赞助",color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.Qmb.show()
@@ -201,10 +202,17 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             self.myLog.warnlog("Max thread must > 1")
             return
         self.maxthread=threadnum
+        try:
+            self.myCoreOpearte.maxThread=self.maxthread
+        except:
+            pass
     def setupwibtothread(self):
         self.wib=WigetInputbox.WigetInputbox(title="当前最大线程数 %s" % self.maxthread,calllog=self.myLog,callmethod=self.setMaxThread,color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wib.show()
     def getpassword(self,password):
+        if password == "":
+            self.myLog.errorlog("None password")
+            return
         if self.myCoreOpearte.isZip:
             pass
         else:
@@ -240,29 +248,3 @@ if __name__ == '__main__':
         #ui.myLog.errorlog(str(e))
     finally:
         pass
-
-        """
-        ['dark_amber.xml',
- 'dark_blue.xml',
- 'dark_cyan.xml',
- 
- 'dark_lightgreen.xml',
- 'dark_pink.xml',
- 'dark_purple.xml',
- 'dark_red.xml',
- 'dark_teal.xml',
- 'dark_yellow.xml',
- 
- 'light_amber.xml',
- 'light_blue.xml',
- 'light_cyan.xml',
- 'light_cyan_500.xml',
- 'light_lightgreen.xml',
- 'light_pink.xml',
- 'light_purple.xml',
- 'light_red.xml',
- 'light_teal.xml',
- 'light_yellow.xml']
-        
-        
-        """
