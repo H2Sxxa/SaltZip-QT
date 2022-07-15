@@ -3,14 +3,14 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 from .WigetInputboxGUI import Ui_Form
 class WigetInputbox(QWidget,Ui_Form):
-    def __init__(self,title="",parent=None,calllog=None,callmethod=None) -> None:
+    def __init__(self,title="",parent=None,calllog=None,callmethod=None,color:str="#00bcd4") -> None:
         super(WigetInputbox,self).__init__(parent=parent)
         self.setupUi(self)
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setWindowTitle("InputBox")
         self.title=title
-        self.setColor()
+        self.setColor(color)
         self.calllog=calllog
         self.callmethod=callmethod
         self.CloseBtn.clicked.connect(self.okchoice)
@@ -19,7 +19,7 @@ class WigetInputbox(QWidget,Ui_Form):
             self.calllog.infolog("Input as "+self.lineEdit.text())
         self.callmethod(self.lineEdit.text())
         self.close()
-    def setColor(self,color:str="#4DD0E1"):
+    def setColor(self,color:str="#00bcd4"):
         self.label.setText(f"<font color='{color}'>"+self.title+"<font>")
         self.label_2.setStyleSheet(f"border: 2px solid {color};")
     def mousePressEvent(self, event):

@@ -5,7 +5,7 @@ from PyQt5.QtGui import QCursor
 from Library.Quet.lite.LiteLog import LiteLog
 from .WigetComboboxGUI import Ui_Form
 class WigetCombobox(QWidget,Ui_Form):
-    def __init__(self,title="",parent=None,ChoiceList:list=[],calllog:LiteLog=None,callmethod=None) -> None:
+    def __init__(self,title="",parent=None,ChoiceList:list=[],calllog:LiteLog=None,callmethod=None,color:str="#00bcd4") -> None:
         super(WigetCombobox,self).__init__(parent=parent)
         self.m_flag=False
         self.myLog=LiteLog(name=__name__)
@@ -15,7 +15,7 @@ class WigetCombobox(QWidget,Ui_Form):
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setWindowTitle("ComboBox")
         self.title=title
-        self.setColor()
+        self.setColor(color)
         self.callmethod=callmethod
         if ChoiceList !=[]:
             for Choice,num in zip(ChoiceList,range(len(ChoiceList))):
@@ -29,7 +29,7 @@ class WigetCombobox(QWidget,Ui_Form):
             self.calllog.logcache.append(self.myLog.lastlog)
         self.callmethod(self.comboBox.itemText(self.comboBox.currentIndex()))
         self.close()
-    def setColor(self,color:str="#4DD0E1"):
+    def setColor(self,color:str="#00bcd4"):
         self.label.setText(f"<font color='{color}'>"+self.title+"<font>")
         self.label_2.setStyleSheet(f"border: 2px solid {color};")
     def mousePressEvent(self, event):

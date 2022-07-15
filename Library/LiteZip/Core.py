@@ -2,6 +2,7 @@ from tarfile import TarFile
 from pyzipper import AESZipFile
 from zipfile import ZipFile
 from rarfile import RarFile
+from py7zr import SevenZipFile
 import os
 from Library.Quet.lite.LiteLog import LiteLog
 from . import RarOSsupport
@@ -68,6 +69,12 @@ class Core():
                         self.unrarfile(filepath)
                 elif self.ZipCore == "7Zip":
                     pass
+            elif ext == ".7z":
+                if self.ZipCore == "SaltZip":
+                    if self.check_7z(filepath):
+                        self.ungzip_call_password_method()
+                    else:
+                        self.un7zfile(filepath)
             else:
                 pass
         except Exception as e:
@@ -153,6 +160,21 @@ class Core():
             self.bindlog.logcache.append(msg)
             self.bindlog.appendtoQT(self.myLog.lastQTlog)
     #Ungzip
+    def un7zfile(self,zip_file_path,pwd=None,target_path=None):
+        if target_path == None:
+            target_path=os.path.dirname(zip_file_path)
+        if pwd == None:
+            zip_file = SevenZipFile(zip_file_path)
+        else:
+            zip_file = SevenZipFile(zip_file_path,password=pwd)
+        zip_list = zip_file.getnames()
+        
+        for f in zip_list:
+            self.add_log("Extract "+f)
+            zip_file.reset()
+            zip_file.extract(path=target_path,targets=[f])
+        zip_file.close()
+        self.add_log("All Successed!")
     def unzipfile(self,zip_file_path,pwd=None,target_path=None):
         if target_path == None:
             target_path=os.path.dirname(zip_file_path)
@@ -160,14 +182,15 @@ class Core():
         aes_zip_file=self.support_gbk(AESZipFile(file=zip_file_path))
         zip_list = zip_file.namelist()
         for f in zip_list:
-            self.add_log("Extract "+f)
             if pwd != None:
                 try:
                     zip_file.extract(f,target_path,pwd.encode("utf-8"))
+                    self.add_log("Extract "+f)
                 except Exception as e:
                     if zip_list[0] == f:
                         self.add_errorlog(str(e))
                         self.add_log("Don't worry,it will try to use AES-256 to ungzip it.")
+                    self.add_log("Extract "+f)
                     aes_zip_file.extract(f,target_path,pwd=pwd.encode("utf-8"))
                 finally:
                     pass
@@ -213,22 +236,20 @@ class Core():
         self.add_log("All Successed!")
         
     #check password
-    
-    def check_rar(self,file: str) -> bool:
+    def check_7z(self,mfile:str) -> bool:
+        sf=SevenZipFile(mfile)
+        return sf.needs_password()
+    def check_rar(self,mfile: str) -> bool:
         '''
         name: 
         des: 检测rar格式压缩包是否加密
         param {传入的文件名}
         return {True:文件加密 False:文件没加密}
         '''
-        rf = RarFile(file)
-        is_encrypted = rf.needs_password()
-        if is_encrypted:
-            return True
-        else:
-            return False
+        rf = RarFile(mfile)
+        return rf.needs_password()
         
-    def check_zip(self,file: str) -> bool:
+    def check_zip(self,mfile: str) -> bool:
         '''
         name: 
         des: 检测zip格式压缩保是否加密
@@ -236,7 +257,7 @@ class Core():
         return {True:文件加密 False：文件没加密}
     
         '''
-        zf = ZipFile(file)
+        zf = ZipFile(mfile)
         for zinfo in zf.infolist():
             is_encrypted = zinfo.flag_bits & 0x1
             if is_encrypted:

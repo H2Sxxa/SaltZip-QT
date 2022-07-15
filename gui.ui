@@ -244,8 +244,8 @@
     <property name="title">
      <string>主题</string>
     </property>
-    <addaction name="LightTheme"/>
-    <addaction name="DarkTheme"/>
+    <addaction name="MenuswichDL"/>
+    <addaction name="MenuswichTheme"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -293,14 +293,14 @@
     <string>帮助</string>
    </property>
   </action>
-  <action name="LightTheme">
+  <action name="MenuswichDL">
    <property name="text">
-    <string>浅色</string>
+    <string>切换深浅</string>
    </property>
   </action>
-  <action name="DarkTheme">
+  <action name="MenuswichTheme">
    <property name="text">
-    <string>深色</string>
+    <string>主题选择</string>
    </property>
   </action>
   <action name="Fullscreen">
