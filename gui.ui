@@ -191,7 +191,7 @@
        </sizepolicy>
       </property>
       <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;在此输入&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
        <string>使用内核：</string>
@@ -253,6 +253,7 @@
     </property>
     <addaction name="FixRar"/>
     <addaction name="MenuSetThread"/>
+    <addaction name="MenuDebug"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -332,6 +333,11 @@
   <action name="MenuSetThread">
    <property name="text">
     <string>设置线程数</string>
+   </property>
+  </action>
+  <action name="MenuDebug">
+   <property name="text">
+    <string>关闭并以debug模式运行</string>
    </property>
   </action>
  </widget>

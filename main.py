@@ -1,6 +1,6 @@
 import sys
 import ctypes
-from os import getcwd,environ
+from os import getcwd,environ, system
 from PyQt5.QtWidgets import QApplication, QMainWindow,QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor,QIcon
@@ -11,12 +11,11 @@ from Library.Quet.lite import LiteLog
 from Library.IQtTool import WigetMessagebox,WigetVerifyBox,WigetInputbox,WigetCombobox
 from Library.LiteZip import Core
 
-
 from qt_material import apply_stylesheet,list_themes
 class SALTZIP(QMainWindow,Ui_MainWindow):
     def __init__(self,myLog=LiteLog.LiteLog(name=__name__), parent=None) -> None:
         super(SALTZIP,self).__init__(parent)
-        self.maxthread=3
+        self.maxthread=1
         self.myLog=myLog
         self.rar=RarOSsupport("rar.exe")
         self.m_flag=False
@@ -38,6 +37,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.MenuAbout.triggered.connect(self.about)
         self.MenuSponsor.triggered.connect(self.sponsor)
         self.MenuExit.triggered.connect(self.choseVerify)
+        self.MenuDebug.triggered.connect(self.debugon)
         self.FixRar.triggered.connect(lambda:self.rar.fixrar(QFileDialog.getOpenFileName(self,"选择压缩包",getcwd())[0],self.myLog,QFileDialog.getExistingDirectory(self,"保存压缩包(取消则默认保存在程序目录)",getcwd())))
         self.MenuwtLog.triggered.connect(lambda:myLog.write_cache_log(QFileDialog.getExistingDirectory(self,"选择日志输出目录",getcwd()),True))
         #button
@@ -46,6 +46,9 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         #info
         self.wmb=WigetMessagebox.WigetMessagebox(["此版本为DEMO 0版本","请勿用于正常生产开发中使用","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wmb.show()
+    def debugon(self):
+        system(f"start debug {sys.argv[0]}")
+        self.close()
     def mainsetup(self):
         self.setWindowFlag(Qt.FramelessWindowHint)
     def swichTheme(self):
@@ -209,6 +212,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
     def setupwibtothread(self):
         self.wib=WigetInputbox.WigetInputbox(title="当前最大线程数 %s" % self.maxthread,calllog=self.myLog,callmethod=self.setMaxThread,color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wib.show()
+        self.wmb=WigetMessagebox.WigetMessagebox(title="警告",desc=["对于.7z线程修改至2+,可能会出现死锁并而在后端抛出错误,而前端不会显示","https://github.com/miurahr/aqtinstall/issues/86","如果需要提高解压速度,建议使用7Zip内核"],color=environ["QTMATERIAL_PRIMARYCOLOR"])
+        self.wmb.show()
     def getpassword(self,password):
         if password == "":
             self.myLog.errorlog("None password")

@@ -24,6 +24,7 @@ class Core():
         self.myLog=LiteLog(name=__name__)
     def setRarlocation(self,rarloction="rar.exe"):
         self.rar=RarOSsupport.RarOSsupport(rarloction)
+        
     def setProcesssafe(self,app):
         self.processingEvents=app.processEvents
     def detect_ziptype(self,filepath):
@@ -33,6 +34,8 @@ class Core():
         elif is_rarfile(filepath):
             self.add_log("Detect as a rar")
             return ".rar"
+        elif is_zipfile and is_7zfile:
+            return self.detect2type(filepath)
         elif is_zipfile:
             self.add_log("Detect as a zip")
             return ".zip"
@@ -42,6 +45,19 @@ class Core():
         else:
             self.add_errorlog("Unknown format")
             return None
+    def detect2type(self,filepath):
+        try:
+            ZipFile(filepath).testzip()
+            return ".zip"
+        except Exception as e:
+            self.add_log(str(e))
+        try:
+            SevenZipFile(filepath).testzip()
+            return ".7z"
+        except Exception as e:
+            self.add_log(str(e))
+            if "Password is required for extracting given archive." in str(e):
+                return ".7z"
     def GetStart(self,filepath,ungzip_call_password_method=None,gzip_call_password_method=None,gzip_call_gziptype=None):
         self.add_log("Max thread is "+str(self.maxThread))
         self.gzip_call_gziptype=gzip_call_gziptype
@@ -60,7 +76,6 @@ class Core():
         else:
             self.add_log("Start ungzip now...")
             self.unzip(filepath)
-    
     def unzip(self,filepath):
         self.filepath=filepath
         ext=os.path.splitext(filepath)[-1] 
