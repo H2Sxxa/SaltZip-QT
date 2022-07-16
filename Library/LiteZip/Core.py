@@ -368,7 +368,7 @@ class Core():
         # copy map first
         for name, info in name_to_info.copy().items():
             try:
-                #FIX if the str is "utf-8",not "cp437",the encode and decode is cost time,and the ui will get into no response
+                #FIX if the str is "utf-8",not "cp437",the encode and decode will cost time,after it, the ui get into no response
                 real_name = name.encode('cp437')
                 real_name = real_name.decode('gbk')
             except Exception as e:
