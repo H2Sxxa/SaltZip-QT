@@ -5,7 +5,6 @@ from zipfile import ZipFile,is_zipfile
 from rarfile import RarFile,is_rarfile
 from py7zr import SevenZipFile,is_7zfile
 import os
-import traceback
 from Library.Quet.lite.LiteLog import LiteLog
 from . import RarOSsupport
 class Core():
@@ -368,7 +367,13 @@ class Core():
         name_to_info = zip_file.NameToInfo
         # copy map first
         for name, info in name_to_info.copy().items():
-            real_name = name.encode('cp437').decode('gbk')
+            try:
+                #FIX if the str is "utf-8",not "cp437",the encode and decode is cost time,and the ui will get into no response
+                real_name = name.encode('cp437')
+                real_name = real_name.decode('gbk')
+            except Exception as e:
+                self.add_errorlog(str(e))
+                return zip_file
             if real_name != name:
                 info.filename = real_name
                 del name_to_info[name]
