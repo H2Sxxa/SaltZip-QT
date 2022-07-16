@@ -1,6 +1,6 @@
 import sys
 import ctypes
-from os import getcwd,environ, system
+from os import getcwd,environ, system,listdir
 from PyQt5.QtWidgets import QApplication, QMainWindow,QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor,QIcon
@@ -47,7 +47,10 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.wmb=WigetMessagebox.WigetMessagebox(["此版本为DEMO 0版本","请勿用于正常生产开发中使用","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wmb.show()
     def debugon(self):
-        system(f"start debug {sys.argv[0]}")
+        if "debug.exe" not in listdir("Data"):
+            self.myLog.errorlog(f"No debug module,install from  and put it in {getcwd()}\Data")
+            return
+        system(f"start Data/debug {sys.argv[0]}")
         self.close()
     def mainsetup(self):
         self.setWindowFlag(Qt.FramelessWindowHint)

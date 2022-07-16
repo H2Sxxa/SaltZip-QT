@@ -10,5 +10,5 @@ def debug(command):
 input("确认原GUI关闭以回车开始")
 print(argv[1])
 debug(argv[1])
-print(f"已保存为 {getcwd()}\debug.log")
+print(f"已保存在 {getcwd()} 下 debug.log")
 system("pause")
