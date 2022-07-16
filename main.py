@@ -48,7 +48,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.wmb.show()
     def debugon(self):
         if "debug.exe" not in listdir("Data"):
-            self.myLog.errorlog(f"No debug module,install from  and put it in {getcwd()}\Data")
+            self.myLog.errorlog(f"No debug module,install from 'https://github.com/IAXRetailer/SaltZip-QT/blob/main/Data/debug.exe' and put it in '{getcwd()}\Data'")
             return
         system(f"start Data/debug {sys.argv[0]}")
         self.close()
