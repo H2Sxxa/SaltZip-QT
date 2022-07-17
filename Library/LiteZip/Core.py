@@ -5,8 +5,11 @@ from zipfile import ZipFile,is_zipfile
 from rarfile import RarFile,is_rarfile
 from py7zr import SevenZipFile,is_7zfile
 import os
+import eventlet
 from Library.Quet.lite.LiteLog import LiteLog
 from . import RarOSsupport
+#from ThreadHelper import ResThread
+
 class Core():
     def __init__(self,ZipCore:str="SaltZip",isZip:bool=False,haspassword:bool=False,issplit:bool=False,bindlog:LiteLog=None,processbar=None) -> None:
         if bindlog != None:
@@ -26,6 +29,7 @@ class Core():
         
     def setProcesssafe(self,app):
         self.processingEvents=app.processEvents
+        
     def detect_ziptype(self,filepath):
         if is_tarfile(filepath):
             self.add_log("Detect as a tar")
@@ -46,10 +50,12 @@ class Core():
             return None
     def detect2type(self,filepath):
         try:
-            ZipFile(filepath).testzip()
+            self.det4_zip(filepath)
             return ".zip"
         except Exception as e:
             self.add_log(str(e))
+            if "password required for extraction" in str(e):
+                return ".zip"
         try:
             SevenZipFile(filepath).testzip()
             return ".7z"
@@ -75,6 +81,7 @@ class Core():
         else:
             self.add_log("Start ungzip now...")
             self.unzip(filepath)
+            
     def unzip(self,filepath):
         self.filepath=filepath
         ext=os.path.splitext(filepath)[-1] 
@@ -88,8 +95,10 @@ class Core():
         try:
             if ext == ".zip":
                 if self.ZipCore == "SaltZip":
-                    if self.ck2_zip(filepath) or self.check_zip(filepath):
+                    if self.ck4_zip(filepath) or self.check_zip(filepath):
                         self.ungzip_call_password_method()
+                    #elif self.get_ck2res(filepath):
+                    #    self.ungzip_call_password_method()
                     else:
                         self.unzipfile(filepath)
                 elif self.ZipCore == "7Zip":
@@ -232,9 +241,12 @@ class Core():
         if target_path == None:
             target_path=os.path.dirname(zip_file_path)
         zip_file = self.support_gbk(ZipFile(file=zip_file_path))
+        self.processingEvents()
         aes_zip_file=self.support_gbk(AESZipFile(file=zip_file_path))
         zip_list = zip_file.namelist()
         for f in zip_list:
+            if f in os.listdir(target_path):
+                continue
             if pwd != None:
                 try:
                     zip_file.setpassword(pwd=pwd.encode("utf-8"))
@@ -251,15 +263,13 @@ class Core():
                     myThread.start()
                     self.add_log("Extract "+f)
                 except Exception as e:
-                    if zip_list[0] == f:
-                        self.add_errorlog(str(e))
-                        self.add_log("Don't worry,it will try to use AES-256 to ungzip it.")
+                    self.add_errorlog(str(e))
+                    self.add_log("Don't worry,it will try to use AES-256 to ungzip it.")
                     self.add_log("Extract "+f)
                     while activeCount() > self.maxThread:
                         self.processingEvents()
                     myThread = Thread(target=aes_zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
                     myThread.start()
-                    myThread.exc
                 finally:
                     pass
             else:
@@ -346,16 +356,10 @@ class Core():
         try:
             zf.testzip()
             return False
-        except RuntimeError as e:
+        except Exception as e:
+            self.add_log(str(e))
             return True
     def check_zip(self,mfile: str) -> bool:
-        '''
-        name: 
-        des: 检测zip格式压缩保是否加密
-        param {传入的文件名}
-        return {True:文件加密 False：文件没加密}
-    
-        '''
         zf = ZipFile(mfile)
         for zinfo in zf.infolist():
             is_encrypted = zinfo.flag_bits & 0x1
@@ -368,14 +372,32 @@ class Core():
         # copy map first
         for name, info in name_to_info.copy().items():
             try:
-                #FIX if the str is "utf-8",not "cp437",the encode and decode will cost time,after it, the ui get into no response
                 real_name = name.encode('cp437')
                 real_name = real_name.decode('gbk')
             except Exception as e:
-                self.add_errorlog(str(e))
+                self.add_log(str(e))
                 return zip_file
             if real_name != name:
                 info.filename = real_name
                 del name_to_info[name]
                 name_to_info[real_name] = info
         return zip_file
+    
+    
+    def ck4_zip(self,mfile:str) -> bool:
+        with self.support_gbk(ZipFile(mfile)) as f:
+            filenames=f.namelist()[0]
+            try:
+                f.extract(filenames,path=os.path.dirname(mfile))
+                return False
+            except Exception as e:
+                self.add_errorlog(str(e))
+                if "password required" in str(e):
+                    return True
+                else:
+                    return False
+    
+    def det4_zip(self,mfile:str):
+        with self.support_gbk(ZipFile(mfile)) as f:
+            filenames=f.namelist()[0]
+            f.extract(filenames,path=os.path.dirname(mfile))
