@@ -5,6 +5,7 @@ from zipfile import ZipFile,is_zipfile
 from rarfile import RarFile,is_rarfile
 from py7zr import SevenZipFile,is_7zfile
 import os
+from Library.LiteZip.ThreadHelper import ResThread
 from Library.Quet.lite.LiteLog import LiteLog
 from Library.Warpper.Timeout import timeout
 from . import RarOSsupport
@@ -16,6 +17,7 @@ class Core():
             self.haslog=True
         else:
             self.haslog=False
+        self.resptime=2
         self.maxThread=1
         self.processbar=processbar
         self.ZipCore=ZipCore
@@ -247,17 +249,18 @@ class Core():
         self.processingEvents()
         aes_zip_file=self.support_gbk(AESZipFile(file=zip_file_path))
         zip_list = zip_file.namelist()
+        if pwd != None:
+            try:
+                callback=self.ck4_zip_password(zip_file,pwd.encode("utf-8"))
+                self.add_log(callback)
+                if "Bad password" in callback:
+                    self.add_errorlog("ERROR PASSWORD")
+                    print("Return main")
+                    return
+            except:
+                pass
         for f in zip_list:
             if pwd != None:
-                try:
-                    callback=self.ck4_zip_password(zip_file,pwd.encode("utf-8"))
-                    self.add_log(callback)
-                    if "Bad password" in callback:
-                        self.add_errorlog("ERROR PASSWORD")
-                        print("Return main")
-                        return
-                except:
-                    pass
                 try:
                     while activeCount() > self.maxThread:
                         self.processingEvents()
@@ -309,17 +312,26 @@ class Core():
             target_path=os.path.dirname(file_path)
         zip_file = RarFile(file=file_path)
         zip_list = zip_file.namelist()
+        if pwd != None:
+            try:
+                zip_file.testrar(pwd=pwd)
+            except Exception as e:
+                self.add_errorlog(str(e))
+                self.add_errorlog("ERROR PASSWORD")
+                return
         for f in zip_list:
             self.add_log("Extract "+f)
             try:
                 if pwd != None:
+                    '''
                     try:
-                        #zip_file.testrar(pwd=pwd)
-                        pass
+                        self.te_rar(zip_file,f,target_path,pwd=pwd)
                     except Exception as e:
-                        self.add_errorlog(str(e))
-                        self.add_errorlog("ERROR PASSWORD")
+                        if ...
+                        self.add_log("Test extract error,turn to ROS")
+                        self.rar.extractrar(file_path,target_path,pwd=pwd)
                         return
+                    '''
                     while activeCount() > self.maxThread:
                         self.processingEvents()
                     myThread = Thread(target=zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
@@ -329,7 +341,6 @@ class Core():
                         self.processingEvents()
                     myThread = Thread(target=zip_file.extract,args=(f,target_path))
                     myThread.start()
-                    #zip_file.extract(f,target_path)
             except Exception as e:
                 self.add_errorlog(str(e))
                 self.add_log("May be it is a illegal archive,dont worry,it will use unrar.exe to handle it")
@@ -377,8 +388,10 @@ class Core():
                 del name_to_info[name]
                 name_to_info[real_name] = info
         return zip_file
-    
-    @timeout(3)
+    @timeout(2)
+    def te_rar(self,IRarfile:RarFile,f,tp,pwd) -> bool:
+        IRarfile.extract(f,tp,pwd=pwd)
+    @timeout(2)
     def ck4_zip(self,mfile:str) -> bool:
         with ZipFile(mfile) as f:
             try:
@@ -389,7 +402,7 @@ class Core():
                     return True
                 else:
                     return False
-    @timeout(3)
+    @timeout(2)
     def ck4_zip_password(self,zipfile:ZipFile,pwd:bytes) -> str:
         Izipfile=zipfile
         Izipfile.setpassword(pwd)
@@ -399,6 +412,6 @@ class Core():
         except Exception as e:
             return str(e)
         
-    @timeout(3)
+    @timeout(2)
     def det4_zip(self,mfile:str):
         ZipFile(mfile).testzip()

@@ -1,9 +1,9 @@
 import threading
 
 class ResThread(threading.Thread):
-    def __init__(self, func, args):
+    def __init__(self, target, args):
         threading.Thread.__init__(self)
-        self.func = func
+        self.func = target
         self.args = args
         self.result = self.func(*self.args)
 
