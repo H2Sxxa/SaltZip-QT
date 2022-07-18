@@ -5,8 +5,8 @@ from zipfile import ZipFile,is_zipfile
 from rarfile import RarFile,is_rarfile
 from py7zr import SevenZipFile,is_7zfile
 import os
-import eventlet
 from Library.Quet.lite.LiteLog import LiteLog
+from Library.Warpper.Timeout import timeout
 from . import RarOSsupport
 #from ThreadHelper import ResThread
 
@@ -95,10 +95,13 @@ class Core():
         try:
             if ext == ".zip":
                 if self.ZipCore == "SaltZip":
-                    if self.ck4_zip(filepath) or self.check_zip(filepath):
+                    try:
+                        tzipP=self.ck4_zip(filepath)
+                    except Exception as e:
+                        self.add_log(str(e))
+                        tzipP=False
+                    if tzipP or self.check_zip(filepath):
                         self.ungzip_call_password_method()
-                    #elif self.get_ck2res(filepath):
-                    #    self.ungzip_call_password_method()
                     else:
                         self.unzipfile(filepath)
                 elif self.ZipCore == "7Zip":
@@ -245,17 +248,16 @@ class Core():
         aes_zip_file=self.support_gbk(AESZipFile(file=zip_file_path))
         zip_list = zip_file.namelist()
         for f in zip_list:
-            if f in os.listdir(target_path):
-                continue
             if pwd != None:
                 try:
-                    zip_file.setpassword(pwd=pwd.encode("utf-8"))
-                    zip_file.testzip()
-                except Exception as e:
-                    self.add_errorlog(str(e))
-                    if "Bad password" in str(e):
+                    callback=self.ck4_zip_password(zip_file,pwd.encode("utf-8"))
+                    self.add_log(callback)
+                    if "Bad password" in callback:
                         self.add_errorlog("ERROR PASSWORD")
-                    return
+                        print("Return main")
+                        return
+                except:
+                    pass
                 try:
                     while activeCount() > self.maxThread:
                         self.processingEvents()
@@ -312,7 +314,8 @@ class Core():
             try:
                 if pwd != None:
                     try:
-                        zip_file.testrar(pwd=pwd)
+                        #zip_file.testrar(pwd=pwd)
+                        pass
                     except Exception as e:
                         self.add_errorlog(str(e))
                         self.add_errorlog("ERROR PASSWORD")
@@ -351,14 +354,6 @@ class Core():
         '''
         rf = RarFile(mfile)
         return rf.needs_password()
-    def ck2_zip(self,mfile:str) -> bool:
-        zf=ZipFile(mfile)
-        try:
-            zf.testzip()
-            return False
-        except Exception as e:
-            self.add_log(str(e))
-            return True
     def check_zip(self,mfile: str) -> bool:
         zf = ZipFile(mfile)
         for zinfo in zf.infolist():
@@ -383,21 +378,27 @@ class Core():
                 name_to_info[real_name] = info
         return zip_file
     
-    
+    @timeout(3)
     def ck4_zip(self,mfile:str) -> bool:
-        with self.support_gbk(ZipFile(mfile)) as f:
-            filenames=f.namelist()[0]
+        with ZipFile(mfile) as f:
             try:
-                f.extract(filenames,path=os.path.dirname(mfile))
+                f.testzip()
                 return False
             except Exception as e:
-                self.add_errorlog(str(e))
                 if "password required" in str(e):
                     return True
                 else:
                     return False
-    
+    @timeout(3)
+    def ck4_zip_password(self,zipfile:ZipFile,pwd:bytes) -> str:
+        Izipfile=zipfile
+        Izipfile.setpassword(pwd)
+        try:
+            Izipfile.testzip()
+            return ""
+        except Exception as e:
+            return str(e)
+        
+    @timeout(3)
     def det4_zip(self,mfile:str):
-        with self.support_gbk(ZipFile(mfile)) as f:
-            filenames=f.namelist()[0]
-            f.extract(filenames,path=os.path.dirname(mfile))
+        ZipFile(mfile).testzip()

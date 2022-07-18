@@ -238,7 +238,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
                 else:
                     pass
             except Exception as e:
-                self.TaskLabel.setText("当前任务：密码错误")
+                self.TaskLabel.setText("当前任务：错误")
                 self.myLog.errorlog(str(e))
                 if "Bad password" in str(e):
                     self.myLog.errorlog("ERROR Password")
