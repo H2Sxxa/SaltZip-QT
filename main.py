@@ -44,7 +44,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.ExitBT.clicked.connect(self.choseVerify)
         self.BTcontinue.clicked.connect(self.loadAll)
         #info
-        self.wmb=WigetMessagebox.WigetMessagebox(["此版本为DEMO 0版本","请勿用于正常生产开发中使用","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
+        self.wmb=WigetMessagebox.WigetMessagebox(["此版本为DEMO版本","请勿用于正常生产开发中使用","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wmb.show()
     def debugon(self):
         if "debug.exe" not in listdir("Data"):
