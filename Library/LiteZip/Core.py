@@ -5,10 +5,9 @@ from zipfile import ZipFile,is_zipfile
 from rarfile import RarFile,is_rarfile
 from py7zr import SevenZipFile,is_7zfile
 import os
-from Library.LiteZip.ThreadHelper import ResThread
 from Library.Quet.lite.LiteLog import LiteLog
 from Library.Warpper.Timeout import timeout
-from . import RarOSsupport
+from . import RarOSsupport,Salt
 #from ThreadHelper import ResThread
 
 class Core():
@@ -17,6 +16,7 @@ class Core():
             self.haslog=True
         else:
             self.haslog=False
+        self.salt=Salt.Salt()
         self.resptime=2
         self.maxThread=1
         self.processbar=processbar
@@ -83,11 +83,10 @@ class Core():
         else:
             self.add_log("Start ungzip now...")
             self.unzip(filepath)
-            
     def unzip(self,filepath):
         self.filepath=filepath
         ext=os.path.splitext(filepath)[-1] 
-        if ext not in [".tar",".rar",".zip",".7z"]:
+        if ext not in [".tar",".rar",".zip",".7z",".hk",".h2k"]:
             self.add_log("A unknown filetype,don't worry,it will detect for you")
             ext=self.detect_ziptype(filepath)
             if ext == None:
@@ -95,6 +94,36 @@ class Core():
         self.ext=ext
         self.add_log("Identify as "+ext)
         try:
+            if ext == ".hk":
+                try:
+                    self.add_log("捕获为第1代SaltZip加密")
+                    password,info=self.salt.get1hkpassword(self.filepath)
+                    self.add_log("文件信息")
+                    self.add_log("校验码%s"%info[0])
+                    self.add_log("发布者%s"%info[1])
+                    self.add_log("发布时间%s"%info[2])
+                    if os.path.exists(self.filepath.replace(".hk",".zip")):
+                        self.unzipfile(self.filepath.replace(".hk",".zip"),password)
+                    elif os.path.exists(self.filepath.replace(".hk",".sip")):
+                        self.unzipfile(self.filepath.replace(".hk",".sip"),password)
+                    else:
+                        self.add_errorlog(self.filepath.replace(".hk",".zip")+" 不存在,检查是否有此文件")
+                except Exception as e:
+                    self.add_errorlog(str(e))
+            if ext == ".h2k":
+                try:
+                    self.add_log("捕获为第2代SaltZip加密")
+                    password,lenstr,info=self.salt.get2hkpassword(self.filepath)
+                    self.add_log("文件信息")
+                    self.add_log("校验码%s"%info[0])
+                    self.add_log("发布者%s"%info[1])
+                    self.add_log("发布时间%s"%info[2])
+                    if os.path.exists(self.filepath.replace(lenstr+".h2k","sip")):
+                        self.unzipfile(self.filepath.replace(lenstr+".h2k","sip"),password)
+                    else:
+                        self.add_errorlog(self.filepath.replace(lenstr+".h2k","sip")+" 不存在,检查是否有此文件")
+                except Exception as e:
+                    self.add_errorlog(str(e))
             if ext == ".zip":
                 if self.ZipCore == "SaltZip":
                     try:
@@ -408,7 +437,7 @@ class Core():
         Izipfile.setpassword(pwd)
         try:
             Izipfile.testzip()
-            return ""
+            return "Correct Password!"
         except Exception as e:
             return str(e)
         
