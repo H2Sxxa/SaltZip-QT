@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QApplication, QMainWindow,QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor,QIcon
 from Library.LiteZip.RarOSsupport import RarOSsupport
-
 from gui import Ui_MainWindow
 from Library.Quet.lite import LiteLog
 from Library.IQtTool import WigetMessagebox,WigetVerifyBox,WigetInputbox,WigetCombobox
@@ -23,8 +22,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.setupUi(self)
         self.setWindowTitle("SaltZip")
         self.mainsetup()
-        self.setWindowIcon(QIcon("./Data/favicon.ico"))
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
+        self.setWindowIcon(QIcon("Data/main.png"))
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.github.iaxretailer.saltzip.mainwindows")
         self.TaskLabel.setText("当前任务：启动")
         self.myLog.bindQTlog(self.LogText)
         self.myLog.infolog("Setup UI successfully")

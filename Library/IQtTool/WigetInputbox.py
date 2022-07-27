@@ -6,6 +6,8 @@ class WigetInputbox(QWidget,Ui_Form):
     def __init__(self,title="",parent=None,calllog=None,callmethod=None,color:str="#00bcd4") -> None:
         super(WigetInputbox,self).__init__(parent=parent)
         self.setupUi(self)
+        from .IconTool import setIcon
+        setIcon(self=self)
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setWindowTitle("InputBox")

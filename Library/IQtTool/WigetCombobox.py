@@ -11,6 +11,8 @@ class WigetCombobox(QWidget,Ui_Form):
         self.myLog=LiteLog(name=__name__)
         self.calllog=calllog
         self.setupUi(self)
+        from .IconTool import setIcon
+        setIcon(self=self)
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setWindowTitle("ComboBox")

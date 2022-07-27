@@ -7,6 +7,8 @@ class WigetMessagebox(QWidget,Ui_Form):
         super(WigetMessagebox,self).__init__(parent=parent)
         self.m_flag=False
         self.setupUi(self)
+        from .IconTool import setIcon
+        setIcon(self=self)
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setWindowTitle("MessageBox")
