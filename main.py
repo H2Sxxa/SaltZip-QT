@@ -16,14 +16,17 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         super(SALTZIP,self).__init__(parent)
         self.maxthread=1
         self.myLog=myLog
-        self.rar=RarOSsupport("rar.exe")
+        self.rar=RarOSsupport("rar.exe",self.myLog)
         self.m_flag=False
         self.passwordcache=""
         self.setupUi(self)
         self.setWindowTitle("SaltZip")
         self.mainsetup()
-        self.setWindowIcon(QIcon("Data/main.png"))
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.github.iaxretailer.saltzip.mainwindows")
+        try:
+            self.setWindowIcon(QIcon("Data/main.png"))
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.github.iaxretailer.saltzip.mainwindows")
+        except Exception as e:
+            self.myLog.errorlog(e)
         self.TaskLabel.setText("当前任务：启动")
         self.myLog.bindQTlog(self.LogText)
         self.myLog.infolog("Setup UI successfully")
@@ -43,7 +46,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.ExitBT.clicked.connect(self.choseVerify)
         self.BTcontinue.clicked.connect(self.loadAll)
         #info
-        self.wmb=WigetMessagebox.WigetMessagebox(["此版本为DEMO版本","请勿用于正常生产开发中使用","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
+        self.wmb=WigetMessagebox.WigetMessagebox(["此版本为DEMO版本","请勿于正常生产开发中使用","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wmb.show()
     def debugon(self):
         if "debug.exe" not in listdir("Data"):

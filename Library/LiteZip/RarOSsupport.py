@@ -3,11 +3,14 @@ from os.path import basename
 from shutil import move
 from Library.Quet.lite.LiteLog import LiteLog
 class RarOSsupport():
-    def __init__(self,Rarexelocation) -> None:
+    def __init__(self,Rarexelocation,logger:LiteLog) -> None:
         self.RarLC=Rarexelocation
+        self.logger=logger
     def cmdhandle(self,command):
+        self.logger.infolog(self.RarLC+" "+command)
         with popen(self.RarLC+" "+command) as pipe:
             msg=pipe.read()
+            self.logger.infolog(msg)
             return msg
     def extractrar(self,location,out,pwd=None):
         if pwd != None:
@@ -21,10 +24,8 @@ class RarOSsupport():
             return self.cmdhandle(f"a -r -ep1 -o+ \"{out}\" \"{location}\"")
     def mkVolumerar(self,location,out,pwd=None,blocksize=None):
         if pwd != None:
-            print(f"a -r -o+ -ep1 -v{blocksize} -p{pwd} \"{out}\" \"{location}\"")
             return self.cmdhandle(f"a -r -o+ -v{blocksize} -p{pwd} \"{out}\" \"{location}\"")
         else:
-            print(f"a -r -ep1 -o+ -v{blocksize} \"{out}\" \"{location}\"")
             return self.cmdhandle(f"a -r -v{blocksize} \"{out}\" \"{location}\"")
     def fixrar(self,location,bindlog:LiteLog=None,callsavepath=""):
         if location == "":
@@ -32,7 +33,7 @@ class RarOSsupport():
             return
         msg=self.cmdhandle(f"r -o+ \"{location}\"")
         bsn=basename(location)
-        
+
         if callsavepath != "":
             try:
                 move("rebuilt."+bsn,callsavepath+"/rebuilt."+bsn)

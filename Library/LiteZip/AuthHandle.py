@@ -22,7 +22,7 @@ class AuthHandle():
             }
         }
         self.decert=""
-        
+  
     @staticmethod
     def drop10to2(string):
         return ' '.join(format(ord(c), 'b') for c in string)

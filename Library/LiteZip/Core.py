@@ -27,7 +27,7 @@ class Core():
         self.bindlog=bindlog
         self.myLog=LiteLog(name=__name__)
     def setRarlocation(self,rarloction="rar.exe"):
-        self.rar=RarOSsupport.RarOSsupport(rarloction)
+        self.rar=RarOSsupport.RarOSsupport(rarloction,self.bindlog)
         
     def setProcesssafe(self,app):
         self.processingEvents=app.processEvents
@@ -173,9 +173,7 @@ class Core():
             zip_file=self.filepath.replace(os.path.splitext(self.filepath)[-1],"")
         elif zip_file == None and os.path.isdir(self.filepath):
             zip_file=self.filepath
-        msg=self.rar.mkVolumerar(self.filepath,zip_file+".rar",pwd=pwd,blocksize=blocksize)
-        self.bindlog.appendtoQT(msg)
-        self.bindlog.logcache.append(msg)
+        Thread(target=self.rar.mkVolumerar,args=(self.filepath,zip_file+".rar",pwd,blocksize)).start()
     def setuppwdsplit(self,blocksize):
         self.blocksize=blocksize
         
@@ -188,18 +186,14 @@ class Core():
             zip_file=self.filepath.replace(os.path.splitext(self.filepath)[-1],"")
         elif zip_file == None and os.path.isdir(self.filepath):
             zip_file=self.filepath
-        msg=self.rar.mkrar(self.filepath,zip_file+".rar",pwd=pwd)
-        self.bindlog.appendtoQT(msg)
-        self.bindlog.logcache.append(msg)
+        Thread(target=self.rar.mkrar,args=(self.filepath,zip_file+".rar",pwd)).start()
     def batch_rar(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"")
         elif zip_file == None and os.path.isdir(start_dir):
             zip_file=start_dir
         target=zip_file+'.rar'
-        msg=self.rar.mkrar(start_dir,target)
-        self.bindlog.appendtoQT(msg)
-        self.bindlog.logcache.append(msg)
+        Thread(target=self.rar.mkrar,args=(start_dir,target)).start()
     def batch_zip(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"")
@@ -373,9 +367,7 @@ class Core():
             except Exception as e:
                 self.add_errorlog(str(e))
                 self.add_log("May be it is a illegal archive,dont worry,it will use unrar.exe to handle it")
-                msg=self.rar.extractrar(file_path,target_path,pwd)
-                self.bindlog.appendtoQT(msg)
-                self.bindlog.logcache.append(msg)
+                Thread(self.rar.extractrar(file_path,target_path,pwd)).start()
                 break
         while activeCount() != 1:
             self.processingEvents()

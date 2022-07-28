@@ -14,6 +14,7 @@ class Salt():
         rxxhash,releaser,rtime=HashTools.b64d(cklist[2]).split("/!")
         password=HashTools.decodeStringhash(cklist[0],key,iv)
         return(password,[rxxhash,releaser,rtime])
+    
     def get2hkpassword(self,filepath):
         lenstr=filepath.replace(".h2k","").split(".")[-1]
         res=HashTools.readrbtostring(filepath,lenstr=int(lenstr)+64+10)
