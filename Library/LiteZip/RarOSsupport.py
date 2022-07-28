@@ -10,7 +10,10 @@ class RarOSsupport():
         self.logger.infolog(self.RarLC+" "+command)
         with popen(self.RarLC+" "+command) as pipe:
             msg=pipe.read()
-            self.logger.infolog(msg)
+            try:
+                self.logger.infolog(msg)
+            except:
+                pass
             return msg
     def extractrar(self,location,out,pwd=None):
         if pwd != None:
@@ -27,6 +30,7 @@ class RarOSsupport():
             return self.cmdhandle(f"a -r -o+ -v{blocksize} -p{pwd} \"{out}\" \"{location}\"")
         else:
             return self.cmdhandle(f"a -r -v{blocksize} \"{out}\" \"{location}\"")
+
     def fixrar(self,location,bindlog:LiteLog=None,callsavepath=""):
         if location == "":
             bindlog.warnlog("A illegal file path!")
