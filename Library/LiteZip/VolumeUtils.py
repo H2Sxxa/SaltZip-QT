@@ -1,4 +1,3 @@
-from os import unlink
 from os.path import dirname
 import pathlib
 def combinefile(filepath):

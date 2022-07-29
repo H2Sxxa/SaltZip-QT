@@ -2,7 +2,7 @@ from json import dumps
 from uuid import UUID,getnode
 import time
 import HashTools
-
+from urllib.parse import quote
 class AuthHandle():
     def __init__(self) -> None:
         self.encert={
@@ -11,6 +11,7 @@ class AuthHandle():
                 "signature":{
                     "releaser":"",
                     "contact":"",
+                    "profile":"",
                     "mac":self.mac_address
                 },
                 "information":{
@@ -37,7 +38,7 @@ class AuthHandle():
         pwd=HashTools.genrds(8)
         res={"key":pwd,"code":HashTools.getStringhash(dumps(self.encert),pwd,None)}
         return self.drop10to2(HashTools.b64e(dumps(res)))
-        
+
     @property
     def mac_address(self):
         mac=UUID(int = getnode()).hex[-12:]
@@ -45,7 +46,7 @@ class AuthHandle():
         mac=mac.upper()
         mac=HashTools.b64e(mac)
         return mac
-    
+
     @property
     def now_time(self):
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())

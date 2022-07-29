@@ -2,9 +2,9 @@ from tarfile import TarFile,is_tarfile
 from threading import Thread,activeCount
 import multivolumefile
 from pyzipper import AESZipFile
-from zipfile import ZipFile,is_zipfile
+from zipfile import ZipFile
 from rarfile import RarFile,is_rarfile
-from py7zr import SevenZipFile,is_7zfile
+from py7zr import SevenZipFile
 import os
 from Library.Quet.lite.LiteLog import LiteLog
 from Library.Warpper.Timeout import timeout
@@ -41,15 +41,34 @@ class Core():
         elif is_rarfile(filepath):
             self.add_log("Detect as a rar")
             return ".rar"
-        elif is_zipfile and is_7zfile:
-            return self.detect2type(filepath)
-        elif is_zipfile:
-            self.add_log("Detect as a zip")
-            return ".zip"
-        elif is_7zfile:
-            self.add_log("Detect as a 7z")
-            return ".7z"
         else:
+            try:
+                self.det4_zip(filepath)
+                return ".zip"
+            except Exception as e:
+                self.add_log(str(e))
+                if "password required for extraction" in str(e):
+                    return ".zip"
+            try:
+                SevenZipFile(filepath).testzip()
+                return ".7z"
+            except Exception as e:
+                if "invalid header data" in str(e):
+                    try:
+                        with multivolumefile.open(filepath.replace(self.trueext,"",-1), mode='rb') as target_archive:
+                            with SevenZipFile(target_archive, 'r') as archive:
+                                archive.testzip()
+                                return "volume7z"
+                    except Exception as e2:
+                        if "Password is required for extracting given archive." in str(e2):
+                            return "volume7z"
+                    self.add_log(str(e2))
+                self.add_log(str(e))
+                if "Password is required for extracting given archive." in str(e):
+                    return ".7z"
+            if self.PK_checkzip(filepath):
+                self.add_log("Attention!It's a obscure match!")
+                return "volumezip"
             self.add_errorlog("Unknown format")
             return None
     def detect2type(self,filepath):
@@ -77,6 +96,9 @@ class Core():
             self.add_log(str(e))
             if "Password is required for extracting given archive." in str(e):
                 return ".7z"
+        if self.PK_checkzip(filepath):
+            self.add_log("Attention!It's a obscure match!")
+            return "volumezip"
     def GetStart(self,filepath,ungzip_call_password_method=None,gzip_call_password_method=None,gzip_call_gziptype=None):
         self.add_log("Max thread is "+str(self.maxThread))
         self.gzip_call_gziptype=gzip_call_gziptype
@@ -178,6 +200,21 @@ class Core():
                         self.ungzip_call_password_method()
                     else:
                         self.unVolume7zfile(filepath)
+            elif ext == "volumezip":
+                if self.ZipCore == "SaltZip":
+                    self.filepath=VolumeUtils.combinefile(self.removefileext(filepath))
+                    filepath=self.filepath
+                    try:
+                        tzipP=self.ck4_zip(filepath)
+                    except Exception as e:
+                        self.add_log(str(e))
+                        tzipP=False
+                    if tzipP or self.check_zip(filepath):
+                        self.ungzip_call_password_method()
+                    else:
+                        self.unVolumeZip(filepath)
+                elif self.ZipCore == "7Zip":
+                    pass
             else:
                 pass
         except Exception as e:
@@ -320,7 +357,9 @@ class Core():
                     while activeCount() != 1:
                         self.processingEvents()
                     self.add_log("All Successed!")
-
+    def unVolumeZip(self,zip_file_path,pwd=None,target_path=None):
+        self.unzipfile(zip_file_path,pwd,target_path)
+        os.unlink(zip_file_path)
     def unzipfile(self,zip_file_path,pwd=None,target_path=None):
         if target_path == None:
             target_path=os.path.dirname(zip_file_path)
@@ -458,6 +497,12 @@ class Core():
         self.add_log("All Successed!")
         zip_file.close()
     #check password
+    def PK_checkzip(self,mfile:str) -> bool:
+        with open(mfile,"rb") as f:
+            if f.read(2) == b"PK":
+                return True
+            else:
+                return False
     def check_7z(self,mfile:str) -> bool:
         sf=SevenZipFile(mfile)
         return sf.needs_password()
