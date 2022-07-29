@@ -1,5 +1,6 @@
 from tarfile import TarFile,is_tarfile
 from threading import Thread,activeCount
+import multivolumefile
 from pyzipper import AESZipFile
 from zipfile import ZipFile,is_zipfile
 from rarfile import RarFile,is_rarfile
@@ -16,6 +17,7 @@ class Core():
             self.haslog=True
         else:
             self.haslog=False
+        self.trueext=""
         self.salt=Salt.Salt()
         self.resptime=2
         self.maxThread=1
@@ -62,6 +64,16 @@ class Core():
             SevenZipFile(filepath).testzip()
             return ".7z"
         except Exception as e:
+            if "invalid header data" in str(e):
+                try:
+                    with multivolumefile.open(filepath.replace(self.trueext,"",-1), mode='rb') as target_archive:
+                        with SevenZipFile(target_archive, 'r') as archive:
+                            archive.testzip()
+                            return "volume7z"
+                except Exception as e2:
+                    if "Password is required for extracting given archive." in str(e2):
+                        return "volume7z"
+                self.add_log(str(e2))
             self.add_log(str(e))
             if "Password is required for extracting given archive." in str(e):
                 return ".7z"
@@ -88,6 +100,7 @@ class Core():
         ext=os.path.splitext(filepath)[-1] 
         if ext not in [".tar",".rar",".zip",".7z",".hk",".h2k"]:
             self.add_log("A unknown filetype,don't worry,it will detect for you")
+            self.trueext=ext
             ext=self.detect_ziptype(filepath)
             if ext == None:
                 return
@@ -102,12 +115,12 @@ class Core():
                     self.add_log("校验码%s"%info[0])
                     self.add_log("发布者%s"%info[1])
                     self.add_log("发布时间%s"%info[2])
-                    if os.path.exists(self.filepath.replace(".hk",".zip")):
-                        self.unzipfile(self.filepath.replace(".hk",".zip"),password)
-                    elif os.path.exists(self.filepath.replace(".hk",".sip")):
-                        self.unzipfile(self.filepath.replace(".hk",".sip"),password)
+                    if os.path.exists(self.filepath.replace(".hk",".zip",-1)):
+                        self.unzipfile(self.filepath.replace(".hk",".zip",-1),password)
+                    elif os.path.exists(self.filepath.replace(".hk",".sip",-1)):
+                        self.unzipfile(self.filepath.replace(".hk",".sip",-1),password)
                     else:
-                        self.add_errorlog(self.filepath.replace(".hk",".zip")+" 不存在,检查是否有此文件")
+                        self.add_errorlog(self.filepath.replace(".hk",".zip",-1)+" 不存在,检查是否有此文件")
                 except Exception as e:
                     self.add_errorlog(str(e))
             if ext == ".h2k":
@@ -118,10 +131,10 @@ class Core():
                     self.add_log("校验码%s"%info[0])
                     self.add_log("发布者%s"%info[1])
                     self.add_log("发布时间%s"%info[2])
-                    if os.path.exists(self.filepath.replace(lenstr+".h2k","sip")):
-                        self.unzipfile(self.filepath.replace(lenstr+".h2k","sip"),password)
+                    if os.path.exists(self.filepath.replace(lenstr+".h2k","sip",-1)):
+                        self.unzipfile(self.filepath.replace(lenstr+".h2k","sip",-1),password)
                     else:
-                        self.add_errorlog(self.filepath.replace(lenstr+".h2k","sip")+" 不存在,检查是否有此文件")
+                        self.add_errorlog(self.filepath.replace(lenstr+".h2k","sip",-1)+" 不存在,检查是否有此文件")
                 except Exception as e:
                     self.add_errorlog(str(e))
             if ext == ".zip":
@@ -159,6 +172,12 @@ class Core():
                         self.ungzip_call_password_method()
                     else:
                         self.un7zfile(filepath)
+            elif ext == "volume7z":
+                if self.ZipCore == "SaltZip":
+                    if self.check_Volume7z(filepath):
+                        self.ungzip_call_password_method()
+                    else:
+                        self.unVolume7zfile(filepath)
             else:
                 pass
         except Exception as e:
@@ -183,26 +202,26 @@ class Core():
     def call_pwd_rar(self,pwd):
         zip_file=None
         if zip_file == None and not os.path.isdir(self.filepath):
-            zip_file=self.filepath.replace(os.path.splitext(self.filepath)[-1],"")
+            zip_file=self.filepath.replace(os.path.splitext(self.filepath)[-1],"",-1)
         elif zip_file == None and os.path.isdir(self.filepath):
             zip_file=self.filepath
         Thread(target=self.rar.mkrar,args=(self.filepath,zip_file+".rar",pwd)).start()
     def batch_rar(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
-            zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"")
+            zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
         elif zip_file == None and os.path.isdir(start_dir):
             zip_file=start_dir
         target=zip_file+'.rar'
         Thread(target=self.rar.mkrar,args=(start_dir,target)).start()
     def batch_zip(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
-            zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"")
+            zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
         elif zip_file == None and os.path.isdir(start_dir):
             zip_file=start_dir
         if os.path.isdir(start_dir):
             with ZipFile(zip_file+'.zip','w') as target:
                 for path, dirnames, filenames in os.walk(start_dir):
-                    fpath=path.replace(start_dir,'')
+                    fpath=path.replace(start_dir,'',-1)
                     for filename in filenames:
                         self.add_log("Append "+filename)
                         target.write(os.path.join(path,filename),os.path.join(fpath,filename))
@@ -213,13 +232,13 @@ class Core():
                 
     def batch_tar(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
-            zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"")
+            zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
         elif zip_file == None and os.path.isdir(start_dir):
             zip_file=start_dir
         if os.path.isdir(start_dir):
             with TarFile(zip_file+'.tar','w') as target:
                 for path, dirnames, filenames in os.walk(start_dir):
-                    fpath=path.replace(start_dir,'')
+                    fpath=path.replace(start_dir,'',-1)
                     for filename in filenames:
                         self.add_log("Append "+filename)
                         target.add(os.path.join(path,filename),os.path.join(fpath,filename))
@@ -253,7 +272,6 @@ class Core():
                 self.add_errorlog("ERROR PASSWORD")
                 return
         zip_list = zip_file.getnames()
-        
         for f in zip_list:
             self.add_log("Extract "+f)
             while activeCount() > self.maxThread:
@@ -265,6 +283,44 @@ class Core():
             self.processingEvents()
         zip_file.close()
         self.add_log("All Successed!")
+    def unVolume7zfile(self,zip_file_path,pwd=None,target_path=None):
+        if target_path == None:
+            target_path=os.path.dirname(zip_file_path)
+        if pwd == None:
+            with multivolumefile.open(self.removefileext(zip_file_path), mode='rb') as target_archive:
+                with SevenZipFile(target_archive, 'r') as zip_file:
+                    zip_list = zip_file.getnames()
+                    for f in zip_list:
+                        self.add_log("Extract "+f)
+                        while activeCount() > self.maxThread:
+                            self.processingEvents()
+                        zip_file.reset()
+                        myThread=Thread(target=zip_file.extract,args=(target_path,[f]))
+                        myThread.start()
+                    while activeCount() != 1:
+                        self.processingEvents()
+                    self.add_log("All Successed!")
+        else:
+            with multivolumefile.open(self.removefileext(zip_file_path), mode='rb') as target_archive:
+                with SevenZipFile(target_archive, 'r',password=pwd) as zip_file:
+                    try:
+                        zip_file.testzip()
+                    except Exception as e:
+                        self.add_errorlog(str(e))
+                        self.add_errorlog("ERROR PASSWORD")
+                        return
+                    zip_list = zip_file.getnames()
+                    for f in zip_list:
+                        self.add_log("Extract "+f)
+                        while activeCount() > self.maxThread:
+                            self.processingEvents()
+                        zip_file.reset()
+                        myThread=Thread(target=zip_file.extract,args=(target_path,[f]))
+                        myThread.start()
+                    while activeCount() != 1:
+                        self.processingEvents()
+                    self.add_log("All Successed!")
+
     def unzipfile(self,zip_file_path,pwd=None,target_path=None):
         if target_path == None:
             target_path=os.path.dirname(zip_file_path)
@@ -374,9 +430,15 @@ class Core():
         self.add_log("All Successed!")
         zip_file.close()
     #check password
+    def removefileext(self,filepath) -> str:
+        return filepath.replace(os.path.splitext(filepath)[-1],"",-1)
     def check_7z(self,mfile:str) -> bool:
         sf=SevenZipFile(mfile)
         return sf.needs_password()
+    def check_Volume7z(self,mfile:str) -> bool:
+        with multivolumefile.open(self.removefileext(mfile), mode='rb') as target_archive:
+            with SevenZipFile(target_archive, 'r') as archive:
+                return archive.needs_password()
     def check_rar(self,mfile: str) -> bool:
         '''
         name: 
@@ -436,3 +498,9 @@ class Core():
     @timeout(2)
     def det4_zip(self,mfile:str):
         ZipFile(mfile).testzip()
+    
+    #utils
+    def getVolume7zTarget(self,filepath,func):
+        with multivolumefile.open(filepath, mode='rb') as target_archive:
+            with SevenZipFile(target_archive, 'r') as archive:
+                return archive.func()

@@ -49,6 +49,3 @@ class AuthHandle():
     @property
     def now_time(self):
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-    
-ah=AuthHandle()
-print(ah.repair2to10(ah.encodeCert))

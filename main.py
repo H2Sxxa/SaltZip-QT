@@ -235,6 +235,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
                         self.myCoreOpearte.unrarfile(self.myCoreOpearte.filepath,password)
                     elif self.myCoreOpearte.ext == ".7z":
                         self.myCoreOpearte.un7zfile(self.myCoreOpearte.filepath,pwd=password)
+                    elif self.myCoreOpearte.ext == "volume7z":
+                        self.myCoreOpearte.unVolume7zfile(self.myCoreOpearte.filepath,pwd=password)
                     self.TaskLabel.setText("当前任务：完成")
                     
                 else:

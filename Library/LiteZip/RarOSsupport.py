@@ -70,5 +70,4 @@ class RarOSsupport():
   u             更新压缩文档中的文件
   v[t[a],b]     详细列出压缩文档的内容 [technical[all],bare]
   x             解压文件带完整路径
-
 '''
