@@ -1,4 +1,5 @@
 from tarfile import TarFile,is_tarfile
+import tarfile
 from threading import Thread,activeCount
 import multivolumefile
 from pyzipper import AESZipFile
@@ -230,6 +231,14 @@ class Core():
         elif zip_file == None and os.path.isdir(self.filepath):
             zip_file=self.filepath
         Thread(target=self.rar.mkVolumerar,args=(self.filepath,zip_file+".rar",pwd,blocksize)).start()
+    def callfortarsplit(self,blocksize:str):
+        blocksize=blocksize.lower().replace("k","000").replace("m","000000").replace("g","000000000")
+        try:
+            blocksize=int(blocksize)
+        except Exception as e:
+            self.add_errorlog(str(e))
+            return
+        self.volume_tar(self.filepath,None,blocksize)
     def setuppwdsplit(self,blocksize):
         self.blocksize=blocksize
         
@@ -267,22 +276,54 @@ class Core():
                 self.add_log("Append "+os.path.basename(start_dir)+" to "+zip_file+".zip")
                 target.write(start_dir,os.path.basename(start_dir))
                 
-    def batch_tar(self,start_dir,zip_file=None):
+    def batch_tar(self,source_dir,zip_file=None):
+        if zip_file == None and not os.path.isdir(source_dir):
+            zip_file=source_dir.replace(os.path.splitext(source_dir)[-1],"",-1)
+        elif zip_file == None and os.path.isdir(source_dir):
+            zip_file=source_dir
+        if os.path.isdir(source_dir):
+            tar = tarfile.open(zip_file+".tar","w")
+            for root,dirs,files in os.walk(source_dir):
+                for adir in dirs:
+                    self.add_log("Add %s"%adir)
+                    pathfile = os.path.join(root, adir)
+                    while activeCount() > self.maxThread:
+                        self.processingEvents()
+                    Thread(target=tar.add,args=(pathfile,)).start()
+                for afile in files:
+                    self.add_log("Add %s"%afile)
+                    pathfile = os.path.join(root, afile)
+                    while activeCount() > self.maxThread:
+                        self.processingEvents()
+                    Thread(target=tar.add,args=(pathfile,)).start()
+        else:
+            tar = tarfile.open(zip_file+".tar","w")
+            pathfile = os.path.join(source_dir)
+            Thread(target=tar.add,args=pathfile).start()
+            while activeCount() != 1:
+                self.processingEvents()
+            self.add_log("All Successed!")
+            tar.close()
+    def volume_tar(self,start_dir,zip_file=None,volume_size=None):
+        self.batch_tar(start_dir,zip_file)
+        self.add_log("Start to split")
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
         elif zip_file == None and os.path.isdir(start_dir):
             zip_file=start_dir
-        if os.path.isdir(start_dir):
-            with TarFile(zip_file+'.tar','w') as target:
-                for path, dirnames, filenames in os.walk(start_dir):
-                    fpath=path.replace(start_dir,'',-1)
-                    for filename in filenames:
-                        self.add_log("Append "+filename)
-                        target.add(os.path.join(path,filename),os.path.join(fpath,filename))
-        else:
-            with TarFile(zip_file+".tar","w") as target:
-                self.add_log("Append "+os.path.basename(start_dir)+" to "+zip_file+".tar")
-                target.add(start_dir,os.path.basename(start_dir))
+        volume=1
+        if volume_size != None:
+            with open(zip_file+".tar","rb") as archive:
+                volume_con=archive.read(volume_size)
+                while volume_con != b"":
+                    self.processingEvents()
+                    with open(zip_file+f".tar.{str(volume).zfill(3)}","wb") as volume_file:
+                        volume_file.write(volume_con)
+                    volume_con=archive.read(volume_size)
+                    volume+=1
+        os.unlink(zip_file+".tar")
+        self.add_log("All Successed!")
+
     #log
     def add_log(self,msg):
         if self.bindlog != None:

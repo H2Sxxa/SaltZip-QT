@@ -181,8 +181,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
                 self.Qmb=WigetMessagebox.WigetMessagebox(desc=["tar无法加密"],title="警告")
                 self.Qmb.show()
             elif self.ifsplit and self.myCoreOpearte.ZipCore =="SaltZip":
-                self.Qmb=WigetMessagebox.WigetMessagebox(desc=["由于管道流特性导致TarFile分卷压缩无法实现","解决方案:尝试使用7Zip内核并重试以创建分卷Tar"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
-                self.Qmb.show()
+                self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.myCoreOpearte.callfortarsplit,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                self.wib.show()
             else:
                 self.myCoreOpearte.batch_tar(self.myCoreOpearte.filepath)
         if gziptype == "rar":
