@@ -3,10 +3,11 @@ from os.path import dirname
 import pathlib
 def combinefile(filepath):
     filenames = map_glob(glob_files(filepath))
-    with open('%s/result'%dirname(filepath), 'ab') as outfile:  # append in binary mode
+    with open('%s/result' % dirname(filepath), 'ab') as outfile:  # append in binary mode
         for fname in filenames:
             with open(fname, 'rb') as infile:        # open in binary mode also
                 outfile.write(infile.read())
+    return '%s/result' % dirname(filepath)
 
 def glob_files(basename):
     if isinstance(basename, str):

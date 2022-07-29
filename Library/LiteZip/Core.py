@@ -8,7 +8,7 @@ from py7zr import SevenZipFile,is_7zfile
 import os
 from Library.Quet.lite.LiteLog import LiteLog
 from Library.Warpper.Timeout import timeout
-from . import RarOSsupport,Salt
+from . import RarOSsupport,Salt,VolumeUtils
 #from ThreadHelper import ResThread
 
 class Core():
@@ -20,7 +20,7 @@ class Core():
         self.trueext=""
         self.salt=Salt.Salt()
         self.resptime=2
-        self.maxThread=1
+        self.maxThread=3
         self.processbar=processbar
         self.ZipCore=ZipCore
         self.haspassword=haspassword
@@ -366,10 +366,11 @@ class Core():
             self.processingEvents()
         self.add_log("All Successed!")
         zip_file.close()
-    def untarfile(self,file_path,target_path=None):
+    def unVolumetarfile(self,file_path,target_path=None):
         if target_path == None:
             target_path=os.path.dirname(file_path)
-        rf = TarFile(file_path)
+        res=VolumeUtils.combinefile(self.removefileext(file_path))
+        rf=TarFile(res)
         rf_list=rf.getnames()
         for f in rf_list:
             self.add_log("Extract "+f)
@@ -386,6 +387,33 @@ class Core():
             self.processingEvents()
         self.add_log("All Successed!")
         rf.close()
+        os.unlink(res)
+
+    def untarfile(self,file_path,target_path=None):
+        if target_path == None:
+            target_path=os.path.dirname(file_path)
+        try:
+            rf = TarFile(file_path)
+            rf_list=rf.getnames()
+            for f in rf_list:
+                self.add_log("Extract "+f)
+                try:
+                    while activeCount() > self.maxThread:
+                        self.processingEvents()
+                    myThread = Thread(target=rf.extract,args=(f,target_path))
+                    myThread.start()
+                except Exception as e:
+                    self.add_log("May be it is a illegal archive")
+                    break
+            while activeCount() != 1:
+                self.processingEvents()
+            self.add_log("All Successed!")
+            rf.close()
+        except Exception as e:
+            if "unexpected end of data" in str(e):
+                Thread(self.unVolumetarfile(file_path,target_path)).start()
+                return
+            self.add_errorlog(str(e))
     def unrarfile(self,file_path,pwd=None,target_path=None):
         if target_path == None:
             target_path=os.path.dirname(file_path)
@@ -430,8 +458,6 @@ class Core():
         self.add_log("All Successed!")
         zip_file.close()
     #check password
-    def removefileext(self,filepath) -> str:
-        return filepath.replace(os.path.splitext(filepath)[-1],"",-1)
     def check_7z(self,mfile:str) -> bool:
         sf=SevenZipFile(mfile)
         return sf.needs_password()
@@ -500,7 +526,5 @@ class Core():
         ZipFile(mfile).testzip()
     
     #utils
-    def getVolume7zTarget(self,filepath,func):
-        with multivolumefile.open(filepath, mode='rb') as target_archive:
-            with SevenZipFile(target_archive, 'r') as archive:
-                return archive.func()
+    def removefileext(self,filepath) -> str:
+        return filepath.replace(os.path.splitext(filepath)[-1],"",-1)
