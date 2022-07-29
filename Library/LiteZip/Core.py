@@ -252,6 +252,7 @@ class Core():
         elif zip_file == None and os.path.isdir(self.filepath):
             zip_file=self.filepath
         Thread(target=self.rar.mkrar,args=(self.filepath,zip_file+".rar",pwd)).start()
+
     def batch_rar(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
@@ -259,6 +260,8 @@ class Core():
             zip_file=start_dir
         target=zip_file+'.rar'
         Thread(target=self.rar.mkrar,args=(start_dir,target)).start()
+
+    #TODO use Thread here
     def batch_zip(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
