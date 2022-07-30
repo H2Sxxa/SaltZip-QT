@@ -245,7 +245,10 @@ class Core():
         
     def callforpwdsplit(self,pwd):
         self.callforrarsplit(self.blocksize,pwd)
-        
+    
+    def call_pwd_zip(self,pwd):
+        self.batch_enzip(self.filepath,password=pwd)
+    
     def call_pwd_rar(self,pwd):
         zip_file=None
         if zip_file == None and not os.path.isdir(self.filepath):
@@ -261,6 +264,35 @@ class Core():
             zip_file=start_dir
         target=zip_file+'.rar'
         Thread(target=self.rar.mkrar,args=(start_dir,target)).start()
+        
+    #TODO Check it safe
+    def batch_enzip(self,start_dir,zip_file=None,password=None):
+        if zip_file == None and not os.path.isdir(start_dir):
+            zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
+        elif zip_file == None and os.path.isdir(start_dir):
+            zip_file=start_dir
+        if os.path.isdir(start_dir):
+            with ENCZipFile(zip_file+'.zip','w') as target:
+                for path, dirnames, filenames in os.walk(start_dir):
+                    fpath=path.replace(start_dir,'',-1)
+                    for dirs in dirnames:
+                        self.add_log("Append %s"%dirs)
+                        pathfile = os.path.join(path, dirs)
+                        while activeCount() > self.maxThread:
+                            self.processingEvents()
+                        Thread(target=target.write,args=(pathfile,os.path.basename(pathfile),None,password.encode("utf-8"))).start()
+                    for filename in filenames:
+                        self.add_log("Append "+filename)
+                        while activeCount() > self.maxThread:
+                            self.processingEvents()
+                        Thread(target=target.write,args=(os.path.join(path,filename),os.path.join(fpath,filename),None,password.encode("utf-8"))).start()
+                while activeCount() != 1:
+                    self.processingEvents()
+                self.add_log("All Successed!")
+        else:
+            with ENCZipFile(zip_file+".zip","w") as target:
+                self.add_log("Append "+os.path.basename(start_dir)+" to "+zip_file+".zip")
+                Thread(target=target.write,args=(start_dir,os.path.basename(start_dir),None,password.encode("utf-8"))).start()
 
     #TODO Check it safe
     def batch_zip(self,start_dir,zip_file=None):

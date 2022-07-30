@@ -169,8 +169,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
     def getgziptype(self,gziptype:str):
         if gziptype == "zip":
             if self.haspassword and self.myCoreOpearte.ZipCore == "SaltZip":
-                self.Qmb=WigetMessagebox.WigetMessagebox(desc=["SB zipfile","解决方案:尝试使用7Zip内核并重试以创建加密Zip"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
-                self.Qmb.show()
+                self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.call_pwd_zip,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                self.wib.show()
             elif self.ifsplit and self.myCoreOpearte.ZipCore == "SaltZip":
                 self.Qmb=WigetMessagebox.WigetMessagebox(desc=["SB zipfile","解决方案:尝试使用7Zip内核并重试以创建分卷Zip"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
                 self.Qmb.show()
