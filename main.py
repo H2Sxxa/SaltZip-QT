@@ -1,6 +1,6 @@
 import sys
 import ctypes
-from os import getcwd,environ, system,listdir
+from os import getcwd,environ, system,listdir,popen
 from PyQt5.QtWidgets import QApplication, QMainWindow,QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor,QIcon
@@ -31,6 +31,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.myLog.bindQTlog(self.LogText)
         self.myLog.infolog("Setup UI successfully")
         #bind Menu
+        self.MenuLoadQSS.triggered.connect(self.loadQSS)
+        self.MenuEXEC.triggered.connect(self.execInf)
         self.MenuswichDL.triggered.connect(self.myTheme)
         self.MenuswichTheme.triggered.connect(self.swichTheme)
         self.MenuSetThread.triggered.connect(self.setupwibtothread)
@@ -46,16 +48,35 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.ExitBT.clicked.connect(self.choseVerify)
         self.BTcontinue.clicked.connect(self.loadAll)
         #info
-        self.wmb=WigetMessagebox.WigetMessagebox(["此版本为DEMO版本","请勿于正常生产开发中使用","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
+        self.wmb=WigetMessagebox.WigetMessagebox(["此版本为Beta版本","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wmb.show()
+
+    def loadQSS(self):
+        try:
+            with open(QFileDialog.getOpenFileName(self,"选择QSS样式表",getcwd())[0],"r",encoding="utf-8") as f:
+                qss=f.read()
+            app.setStyleSheet(qss)
+            self.myLog.infolog("success")
+        except Exception as e:
+            self.myLog.errorlog(str(e))
+
+    def execInf(self):
+        try:
+            with open(QFileDialog.getOpenFileName(self,"选择脚本",getcwd())[0],"r",encoding="utf-8") as f:
+                exec(f.read())
+            self.myLog.infolog("exec success")
+        except Exception as e:
+            self.myLog.errorlog(str(e))            
     def debugon(self):
         if "debug.exe" not in listdir("Data"):
             self.myLog.errorlog(f"No debug module,install from 'https://github.com/IAXRetailer/SaltZip-QT/blob/main/Data/debug.exe' and put it in '{getcwd()}\Data'")
             return
         system(f"start Data/debug {sys.argv[0]}")
         self.close()
+
     def mainsetup(self):
         self.setWindowFlag(Qt.FramelessWindowHint)
+
     def swichTheme(self):
         themelist=list_themes()
         themelist.remove(environ["QTMATERIAL_THEME"])
