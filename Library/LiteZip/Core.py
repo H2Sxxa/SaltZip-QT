@@ -225,6 +225,24 @@ class Core():
     def enzip(self):
         self.gzip_call_gziptype()
     #gzip
+    def callfor7zpwd(self,pwd=None):
+        self.batch_7z(self.filepath,pwd=pwd)
+
+    def preparecallpwd(self,func):
+        self.callpre7zsplit=func
+
+    def callpreparecallsplit(self,pwd):
+        self.callpre7zsplit(pwd)
+
+    def callfor7zvolume(self,volume=None):
+        volume=volume.lower().replace("k","000").replace("m","000000").replace("g","000000000")
+        try:
+            volume=int(volume)
+        except Exception as e:
+            self.add_errorlog(str(e))
+            return
+        self.batch_7z(self.filepath,volumesize=volume)
+
     def callforrarsplit(self,blocksize,pwd=None):
         zip_file=None
         if zip_file == None and not os.path.isdir(self.filepath):
@@ -264,8 +282,120 @@ class Core():
             zip_file=start_dir
         target=zip_file+'.rar'
         Thread(target=self.rar.mkrar,args=(start_dir,target)).start()
-        
-    #TODO Check it safe
+
+    def batch_7z(self,start_dir,zip_file=None,pwd=None,volumesize=None):
+        if zip_file == None and not os.path.isdir(start_dir):
+            zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
+        elif zip_file == None and os.path.isdir(start_dir):
+            zip_file=start_dir
+        if pwd==None:
+            if volumesize == None:
+                if os.path.isdir(start_dir):
+                    with SevenZipFile(zip_file+".7z","w") as target:
+                        for path, dirnames, filenames in os.walk(start_dir):
+                            fpath=path.replace(start_dir,'',-1)
+                            for dirs in dirnames:
+                                self.add_log("Append %s"%dirs)
+                                pathfile = os.path.join(path, dirs)
+                                while activeCount() > self.maxThread:
+                                    self.processingEvents()
+                                Thread(target=target.write,args=(pathfile,os.path.basename(pathfile))).start()
+                            for filename in filenames:
+                                self.add_log("Append "+filename)
+                                while activeCount() > self.maxThread:
+                                    self.processingEvents()
+                                Thread(target=target.write,args=(os.path.join(path,filename),os.path.join(fpath,filename))).start()
+                        while activeCount() != 1:
+                            self.processingEvents()
+                        self.add_log("All Successed!")
+                else:
+                    with SevenZipFile(zip_file+".7z","w") as target:
+                        self.add_log("Append "+os.path.basename(start_dir))
+                        Thread(target=target.write,args=(start_dir,os.path.basename(start_dir))).start()
+                        while activeCount() != 1:
+                            self.processingEvents()
+                        self.add_log("All Successed!")
+            else:
+                if os.path.isdir(start_dir):
+                    with multivolumefile.open(zip_file+".7z","wb",volumesize) as target_archive:
+                        with SevenZipFile(target_archive,"w") as target:
+                            for path, dirnames, filenames in os.walk(start_dir):
+                                fpath=path.replace(start_dir,'',-1)
+                                for dirs in dirnames:
+                                    self.add_log("Append %s"%dirs)
+                                    pathfile = os.path.join(path, dirs)
+                                    while activeCount() > self.maxThread:
+                                        self.processingEvents()
+                                    Thread(target=target.write,args=(pathfile,os.path.basename(pathfile))).start()
+                                for filename in filenames:
+                                    self.add_log("Append "+filename)
+                                    while activeCount() > self.maxThread:
+                                        self.processingEvents()
+                                    Thread(target=target.write,args=(os.path.join(path,filename),os.path.join(fpath,filename))).start()
+                            while activeCount() != 1:
+                                self.processingEvents()
+                            self.add_log("All Successed!")
+                else:
+                    with multivolumefile.open(zip_file+".7z","wb",volumesize) as target_archive:
+                        with SevenZipFile(target_archive,"w") as target:
+                            self.add_log("Append "+os.path.basename(start_dir))
+                            Thread(target=target.write,args=(start_dir,os.path.basename(start_dir))).start()
+                            while activeCount() != 1:
+                                self.processingEvents()
+                            self.add_log("All Successed!")
+        else:
+            if volumesize == None:
+                if os.path.isdir(start_dir):
+                    with SevenZipFile(zip_file+".7z","w",password=pwd) as target:
+                        for path, dirnames, filenames in os.walk(start_dir):
+                            fpath=path.replace(start_dir,'',-1)
+                            for dirs in dirnames:
+                                self.add_log("Append %s"%dirs)
+                                pathfile = os.path.join(path, dirs)
+                                while activeCount() > self.maxThread:
+                                    self.processingEvents()
+                                Thread(target=target.write,args=(pathfile,os.path.basename(pathfile))).start()
+                            for filename in filenames:
+                                self.add_log("Append "+filename)
+                                while activeCount() > self.maxThread:
+                                    self.processingEvents()
+                                Thread(target=target.write,args=(os.path.join(path,filename),os.path.join(fpath,filename))).start()
+                        while activeCount() != 1:
+                            self.processingEvents()
+                        self.add_log("All Successed!")
+                else:
+                    with SevenZipFile(zip_file+".7z","w",password=pwd) as target:
+                        self.add_log("Append "+os.path.basename(start_dir))
+                        Thread(target=target.write,args=(start_dir,os.path.basename(start_dir))).start()
+            else:
+                if os.path.isdir(start_dir):
+                    with multivolumefile.open(zip_file+".7z","wb",volumesize) as target_archive:
+                        with SevenZipFile(target_archive,"w",password=pwd) as target:
+                            for path, dirnames, filenames in os.walk(start_dir):
+                                fpath=path.replace(start_dir,'',-1)
+                                for dirs in dirnames:
+                                    self.add_log("Append %s"%dirs)
+                                    pathfile = os.path.join(path, dirs)
+                                    while activeCount() > self.maxThread:
+                                        self.processingEvents()
+                                    Thread(target=target.write,args=(pathfile,os.path.basename(pathfile))).start()
+                                for filename in filenames:
+                                    self.add_log("Append "+filename)
+                                    while activeCount() > self.maxThread:
+                                        self.processingEvents()
+                                    Thread(target=target.write,args=(os.path.join(path,filename),os.path.join(fpath,filename))).start()
+                            while activeCount() != 1:
+                                self.processingEvents()
+                            self.add_log("All Successed!")
+                else:
+                    with multivolumefile.open(zip_file+".7z","wb",volumesize) as target_archive:
+                        with SevenZipFile(target_archive,"w",password=pwd) as target:
+                            self.add_log("Append "+os.path.basename(start_dir))
+                            Thread(target=target.write,args=(start_dir,os.path.basename(start_dir))).start()
+                            while activeCount() != 1:
+                                self.processingEvents()
+                            self.add_log("All Successed!")
+
     def batch_enzip(self,start_dir,zip_file=None,password=None):
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
@@ -291,10 +421,12 @@ class Core():
                 self.add_log("All Successed!")
         else:
             with ENCZipFile(zip_file+".zip","w") as target:
-                self.add_log("Append "+os.path.basename(start_dir)+" to "+zip_file+".zip")
+                self.add_log("Append "+os.path.basename(start_dir))
                 Thread(target=target.write,args=(start_dir,os.path.basename(start_dir),None,password.encode("utf-8"))).start()
+                while activeCount() != 1:
+                    self.processingEvents()
+                self.add_log("All Successed!")
 
-    #TODO Check it safe
     def batch_zip(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
@@ -320,8 +452,11 @@ class Core():
                 self.add_log("All Successed!")
         else:
             with ZipFile(zip_file+".zip","w") as target:
-                self.add_log("Append "+os.path.basename(start_dir)+" to "+zip_file+".zip")
+                self.add_log("Append "+os.path.basename(start_dir))
                 Thread(target=target.write,args=(start_dir,os.path.basename(start_dir))).start()
+                while activeCount() != 1:
+                    self.processingEvents()
+                self.add_log("All Successed!")
                 
     def batch_tar(self,source_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(source_dir):

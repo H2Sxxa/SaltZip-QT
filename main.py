@@ -160,7 +160,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.wib.show()
         
     def callforgziptype(self):
-        self.wcb=WigetCombobox.WigetCombobox("选择模式",ChoiceList=["zip","tar","rar"],calllog=self.myLog,callmethod=self.getgziptype)
+        self.wcb=WigetCombobox.WigetCombobox("选择模式",ChoiceList=["zip","tar","rar","7z"],calllog=self.myLog,callmethod=self.getgziptype)
         self.wcb.show()
     def callforrarpwdsplit(self,blksize):
         self.myCoreOpearte.setuppwdsplit(blksize)
@@ -168,33 +168,71 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.wib.show()
     def getgziptype(self,gziptype:str):
         if gziptype == "zip":
-            if self.haspassword and self.myCoreOpearte.ZipCore == "SaltZip":
-                self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.call_pwd_zip,color=environ["QTMATERIAL_PRIMARYCOLOR"])
-                self.wib.show()
-            elif self.ifsplit and self.myCoreOpearte.ZipCore == "SaltZip":
-                self.Qmb=WigetMessagebox.WigetMessagebox(desc=["SB zipfile","解决方案:尝试使用7Zip内核并重试以创建分卷Zip"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
-                self.Qmb.show()
+            if self.myCoreOpearte.ZipCore == "SaltZip":
+                if self.haspassword and self.ifsplit:
+                    self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.call_pwd_zip,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                    self.wib.show()
+                elif self.haspassword:
+                    self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.call_pwd_zip,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                    self.wib.show()
+                elif self.ifsplit:
+                    self.Qmb=WigetMessagebox.WigetMessagebox(desc=["SB zipfile","解决方案:尝试使用7Zip内核并重试以创建分卷Zip"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                    self.Qmb.show()
+                else:
+                    self.myCoreOpearte.batch_zip(self.myCoreOpearte.filepath)
             else:
-                self.myCoreOpearte.batch_zip(self.myCoreOpearte.filepath)
+                pass
         if gziptype == "tar":
-            if self.ifsplit and self.myCoreOpearte.ZipCore =="SaltZip":
-                self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.myCoreOpearte.callfortarsplit,color=environ["QTMATERIAL_PRIMARYCOLOR"])
-                self.wib.show()
-            else:
-                self.myCoreOpearte.batch_tar(self.myCoreOpearte.filepath)
-        if gziptype == "rar":
-            if self.haspassword and self.myCoreOpearte.ZipCore == "SaltZip" and not self.ifsplit:
-                self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.call_pwd_rar,color=environ["QTMATERIAL_PRIMARYCOLOR"])
-                self.wib.show()
-            elif self.ifsplit and self.myCoreOpearte.ZipCore =="SaltZip":
-                if self.haspassword:
-                    self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.callforrarpwdsplit,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+            if self.myCoreOpearte.ZipCore =="SaltZip":
+                if self.ifsplit:
+                    self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.myCoreOpearte.callfortarsplit,color=environ["QTMATERIAL_PRIMARYCOLOR"])
                     self.wib.show()
                 else:
-                    self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.myCoreOpearte.callforrarsplit,color=environ["QTMATERIAL_PRIMARYCOLOR"])
-                    self.wib.show()
+                    self.myCoreOpearte.batch_tar(self.myCoreOpearte.filepath)
             else:
-                self.myCoreOpearte.batch_rar(self.myCoreOpearte.filepath)
+                pass
+        if gziptype == "rar":
+            if self.myCoreOpearte.ZipCore == "SaltZip":
+                if self.haspassword and not self.ifsplit:
+                    self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.call_pwd_rar,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                    self.wib.show()
+                elif self.ifsplit:
+                    if self.haspassword:
+                        self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.callforrarpwdsplit,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                        self.wib.show()
+                    else:
+                        self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.myCoreOpearte.callforrarsplit,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                        self.wib.show()
+                else:
+                    self.myCoreOpearte.batch_rar(self.myCoreOpearte.filepath)
+            else:
+                pass
+        if gziptype == "7z":
+            if self.myCoreOpearte.ZipCore == "SaltZip":
+                if self.haspassword and self.ifsplit:
+                    self.myCoreOpearte.preparecallpwd(self.getpwdforsplit7z)
+                    self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.callpreparecallsplit,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                    self.wib.show()
+                elif self.ifsplit:
+                    self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.myCoreOpearte.callfor7zvolume,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                    self.wib.show()
+                elif self.haspassword:
+                    self.wib=WigetInputbox.WigetInputbox("输入压缩密码",calllog=self.myLog,callmethod=self.myCoreOpearte.call_pwd_zip,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+                    self.wib.show()
+                else:
+                    self.myCoreOpearte.batch_7z(self.myCoreOpearte.filepath)
+    def getpwdforsplit7z(self,pwd):
+        self.pwd7z=pwd
+        self.wib=WigetInputbox.WigetInputbox("输入分卷大小(1024k,1024m...)",calllog=self.myLog,callmethod=self.runvolumepwd7z,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+        self.wib.show()
+    def runvolumepwd7z(self,volumesize):
+        volume=volumesize.lower().replace("k","000").replace("m","000000").replace("g","000000000")
+        try:
+            volume=int(volume)
+        except Exception as e:
+            self.add_errorlog(str(e))
+            return
+        self.myCoreOpearte.batch_7z(self.myCoreOpearte.filepath,pwd=self.pwd7z,volumesize=volume)
     def setMaxThread(self,threadnum):
         if threadnum == "":
             return
