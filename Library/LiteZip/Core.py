@@ -3,6 +3,7 @@ import tarfile
 from threading import Thread,activeCount
 import multivolumefile
 from pyzipper import AESZipFile
+from zipencrypt import ZipFile as ENCZipFile
 from zipfile import ZipFile
 from rarfile import RarFile,is_rarfile
 from py7zr import SevenZipFile
@@ -261,7 +262,7 @@ class Core():
         target=zip_file+'.rar'
         Thread(target=self.rar.mkrar,args=(start_dir,target)).start()
 
-    #TODO use Thread here
+    #TODO Check it safe
     def batch_zip(self,start_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(start_dir):
             zip_file=start_dir.replace(os.path.splitext(start_dir)[-1],"",-1)
@@ -271,13 +272,24 @@ class Core():
             with ZipFile(zip_file+'.zip','w') as target:
                 for path, dirnames, filenames in os.walk(start_dir):
                     fpath=path.replace(start_dir,'',-1)
+                    for dirs in dirnames:
+                        self.add_log("Append %s"%dirs)
+                        pathfile = os.path.join(path, dirs)
+                        while activeCount() > self.maxThread:
+                            self.processingEvents()
+                        Thread(target=target.write,args=(pathfile,os.path.basename(pathfile))).start()
                     for filename in filenames:
                         self.add_log("Append "+filename)
-                        target.write(os.path.join(path,filename),os.path.join(fpath,filename))
+                        while activeCount() > self.maxThread:
+                            self.processingEvents()
+                        Thread(target=target.write,args=(os.path.join(path,filename),os.path.join(fpath,filename))).start()
+                while activeCount() != 1:
+                    self.processingEvents()
+                self.add_log("All Successed!")
         else:
             with ZipFile(zip_file+".zip","w") as target:
                 self.add_log("Append "+os.path.basename(start_dir)+" to "+zip_file+".zip")
-                target.write(start_dir,os.path.basename(start_dir))
+                Thread(target=target.write,args=(start_dir,os.path.basename(start_dir))).start()
                 
     def batch_tar(self,source_dir,zip_file=None):
         if zip_file == None and not os.path.isdir(source_dir):
@@ -288,25 +300,25 @@ class Core():
             tar = tarfile.open(zip_file+".tar","w")
             for root,dirs,files in os.walk(source_dir):
                 for adir in dirs:
-                    self.add_log("Add %s"%adir)
+                    self.add_log("Append %s"%adir)
                     pathfile = os.path.join(root, adir)
                     while activeCount() > self.maxThread:
                         self.processingEvents()
-                    Thread(target=tar.add,args=(pathfile,)).start()
+                    Thread(target=tar.add,args=(pathfile,os.path.basename(pathfile))).start()
                 for afile in files:
-                    self.add_log("Add %s"%afile)
+                    self.add_log("Append %s"%afile)
                     pathfile = os.path.join(root, afile)
                     while activeCount() > self.maxThread:
                         self.processingEvents()
-                    Thread(target=tar.add,args=(pathfile,)).start()
+                    Thread(target=tar.add,args=(pathfile,os.path.basename(pathfile))).start()
         else:
             tar = tarfile.open(zip_file+".tar","w")
             pathfile = os.path.join(source_dir)
-            Thread(target=tar.add,args=pathfile).start()
-            while activeCount() != 1:
-                self.processingEvents()
-            self.add_log("All Successed!")
-            tar.close()
+            Thread(target=tar.add,args=(pathfile,os.path.basename(pathfile))).start()
+        while activeCount() != 1:
+            self.processingEvents()
+        self.add_log("All Successed!")
+        tar.close()
     def volume_tar(self,start_dir,zip_file=None,volume_size=None):
         self.batch_tar(start_dir,zip_file)
         self.add_log("Start to split")
