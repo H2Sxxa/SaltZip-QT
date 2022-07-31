@@ -252,10 +252,17 @@
     <property name="title">
      <string>其他</string>
     </property>
+    <widget class="QMenu" name="MenuDev">
+     <property name="title">
+      <string>开发者工具</string>
+     </property>
+     <addaction name="Menuexec"/>
+     <addaction name="Menueval"/>
+    </widget>
     <addaction name="FixRar"/>
     <addaction name="MenuSetThread"/>
     <addaction name="MenuDebug"/>
-    <addaction name="MenuEXEC"/>
+    <addaction name="MenuDev"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -350,6 +357,16 @@
   <action name="MenuEXEC">
    <property name="text">
     <string>EXEC</string>
+   </property>
+  </action>
+  <action name="Menuexec">
+   <property name="text">
+    <string>EXEC</string>
+   </property>
+  </action>
+  <action name="Menueval">
+   <property name="text">
+    <string>EVAL</string>
    </property>
   </action>
  </widget>

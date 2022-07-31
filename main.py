@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor,QIcon
 from Library.LiteZip.RarOSsupport import RarOSsupport
 from gui import Ui_MainWindow
-from Library.Quet.lite import LiteLog
+from Library.Quet.lite import LiteLog,LiteConfig
 from Library.IQtTool import WigetMessagebox,WigetVerifyBox,WigetInputbox,WigetCombobox
 from Library.LiteZip import Core
 
@@ -16,6 +16,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         super(SALTZIP,self).__init__(parent)
         self.maxthread=1
         self.myLog=myLog
+        self.myCfg=LiteConfig.LiteConfig("Data/config/main.cfg",litelog=True,bindlog=self.myLog)
+        #self.myLang=LiteConfig.LiteConfig("Data/lang/zh_cn.cfg",litelog=True,bindlog=self.myLog)
         self.rar=RarOSsupport("rar.exe",self.myLog)
         self.m_flag=False
         self.passwordcache=""
@@ -29,10 +31,10 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             self.myLog.errorlog(e)
         self.TaskLabel.setText("当前任务：启动")
         self.myLog.bindQTlog(self.LogText)
-        self.myLog.infolog("Setup UI successfully")
         #bind Menu
         self.MenuLoadQSS.triggered.connect(self.loadQSS)
-        self.MenuEXEC.triggered.connect(self.execInf)
+        self.Menuexec.triggered.connect(self.execInf)
+        self.Menueval.triggered.connect(self.evalInf)
         self.MenuswichDL.triggered.connect(self.myTheme)
         self.MenuswichTheme.triggered.connect(self.swichTheme)
         self.MenuSetThread.triggered.connect(self.setupwibtothread)
@@ -50,7 +52,27 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         #info
         self.wmb=WigetMessagebox.WigetMessagebox(["此版本为Beta版本","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wmb.show()
-
+        self.startup()
+        self.myLog.infolog("Setup UI successfully")
+    def setupConfig(self):
+        if "main.cfg" not in listdir("Data/config"):
+            self.myCfg.addCfg("theme",'light_cyan_500.xml')
+            self.myCfg.saveCfg()
+        else:
+            self.myCfg.loadCfg()
+            try:
+                apply_stylesheet(app,theme=self.myCfg.readCfg("theme"))
+            except Exception as e:
+                self.myLog.errorlog(str(e))
+    def startup(self):
+        for script in listdir("Data/startup"):
+            self.myLog.infolog("插件数量 %s"%len(listdir("Data/startup")))
+            try:
+                with open("Data/startup/%s" % script,"r",encoding="utf-8") as s:
+                    self.myLog.infolog("加载插件 %s" % "Data/startup/%s" % script)
+                    exec(s.read())
+            except Exception as e:
+                self.myLog.errorlog(str(e))
     def loadQSS(self):
         try:
             with open(QFileDialog.getOpenFileName(self,"选择QSS样式表",getcwd())[0],"r",encoding="utf-8") as f:
@@ -59,7 +81,17 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             self.myLog.infolog("success")
         except Exception as e:
             self.myLog.errorlog(str(e))
-
+    def evalrun(self,string):
+        if string == "":
+            return
+        try:
+            eval(string)
+            self.myLog.infolog("eval success")
+        except Exception as e:
+            self.myLog.errorlog(str(e))
+    def evalInf(self):
+        self.wib=WigetInputbox.WigetInputbox("输入命令",calllog=self.myLog,callmethod=self.evalrun,color=environ["QTMATERIAL_PRIMARYCOLOR"])
+        self.wib.show()
     def execInf(self):
         try:
             with open(QFileDialog.getOpenFileName(self,"选择脚本",getcwd())[0],"r",encoding="utf-8") as f:
@@ -76,7 +108,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
 
     def mainsetup(self):
         self.setWindowFlag(Qt.FramelessWindowHint)
-
+        self.setupConfig()
+        
     def swichTheme(self):
         themelist=list_themes()
         themelist.remove(environ["QTMATERIAL_THEME"])
@@ -85,6 +118,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.wmb.show()
     def runSwichTheme(self,themename):
         apply_stylesheet(app=app,theme=themename)
+        self.myCfg.modifyCfg("theme",themename)
     def myTheme(self):
         nowTheme=environ["QTMATERIAL_THEME"]
         themelist=list_themes()
@@ -96,6 +130,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
                 return
             else:
                 apply_stylesheet(app=app,theme=targetTheme)
+                self.myCfg.modifyCfg("theme",targetTheme)
                 return
         if "light" in nowTheme:
             if "_500" in nowTheme:
@@ -107,6 +142,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
                 return
             else:
                 apply_stylesheet(app=app,theme=targetTheme)
+                self.myCfg.modifyCfg("theme",targetTheme)
                 return
     def mousePressEvent(self, event):
         if event.button()==Qt.LeftButton and not self.isFullScreen():
@@ -132,6 +168,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.wvb.show()
     def closeEvent(self, event) -> None:
         try:
+            self.myCfg.saveCfg()
             self.Qmb.close()
             self.wvb.close()
         except:
