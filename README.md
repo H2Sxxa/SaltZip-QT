@@ -19,9 +19,6 @@
  - 断点续传（？
  - ...
 
-# FIX LIST
- - BCJ2过滤器压缩包(对应7-zip极限压缩.7z)无法使用SaltZip Core解压，并且无法捕获异常
-
 # 功能
 
 |   SaltZip    | zip  |        tar        | rar  |  7z  |

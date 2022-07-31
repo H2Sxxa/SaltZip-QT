@@ -11,7 +11,7 @@ import os
 from Library.Quet.lite.LiteLog import LiteLog
 from Library.Warpper.Timeout import timeout
 from . import RarOSsupport,Salt,VolumeUtils
-#from ThreadHelper import ResThread
+from .ThreadHelper import ThreadHooker
 
 class Core():
     def __init__(self,ZipCore:str="SaltZip",isZip:bool=False,haspassword:bool=False,issplit:bool=False,bindlog:LiteLog=None,processbar=None,taskLabel=None) -> None:
@@ -19,6 +19,7 @@ class Core():
             self.haslog=True
         else:
             self.haslog=False
+        self.ThreadHooker=ThreadHooker(bindlog)
         self.trueext=""
         self.salt=Salt.Salt()
         self.resptime=2
@@ -36,7 +37,10 @@ class Core():
         
     def setProcesssafe(self,app):
         self.processingEvents=app.processEvents
-        
+    
+    def ThreadHooker(self):
+        pass
+    
     def detect_ziptype(self,filepath):
         self.processbar.setRange(0,0)
         self.taskLabel.setText("当前任务：分析")
