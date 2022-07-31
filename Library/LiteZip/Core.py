@@ -14,7 +14,7 @@ from . import RarOSsupport,Salt,VolumeUtils
 #from ThreadHelper import ResThread
 
 class Core():
-    def __init__(self,ZipCore:str="SaltZip",isZip:bool=False,haspassword:bool=False,issplit:bool=False,bindlog:LiteLog=None,processbar=None) -> None:
+    def __init__(self,ZipCore:str="SaltZip",isZip:bool=False,haspassword:bool=False,issplit:bool=False,bindlog:LiteLog=None,processbar=None,taskLabel=None) -> None:
         if bindlog != None:
             self.haslog=True
         else:
@@ -24,6 +24,7 @@ class Core():
         self.resptime=2
         self.maxThread=3
         self.processbar=processbar
+        self.taskLabel=taskLabel
         self.ZipCore=ZipCore
         self.haspassword=haspassword
         self.issplit=issplit
@@ -37,6 +38,8 @@ class Core():
         self.processingEvents=app.processEvents
         
     def detect_ziptype(self,filepath):
+        self.processbar.setRange(0,0)
+        self.taskLabel.setText("当前任务：分析")
         if is_tarfile(filepath):
             self.add_log("Detect as a tar")
             return ".tar"
@@ -71,36 +74,12 @@ class Core():
             if self.PK_checkzip(filepath):
                 self.add_log("Attention!It's a obscure match!")
                 return "volumezip"
+            self.processbar.setRange(0,1)
+            self.processbar.setValue(1)
+            self.taskLabel.setText("当前任务：未知格式")
             self.add_errorlog("Unknown format")
             return None
-    def detect2type(self,filepath):
-        try:
-            self.det4_zip(filepath)
-            return ".zip"
-        except Exception as e:
-            self.add_log(str(e))
-            if "password required for extraction" in str(e):
-                return ".zip"
-        try:
-            SevenZipFile(filepath).testzip()
-            return ".7z"
-        except Exception as e:
-            if "invalid header data" in str(e):
-                try:
-                    with multivolumefile.open(filepath.replace(self.trueext,"",-1), mode='rb') as target_archive:
-                        with SevenZipFile(target_archive, 'r') as archive:
-                            archive.testzip()
-                            return "volume7z"
-                except Exception as e2:
-                    if "Password is required for extracting given archive." in str(e2):
-                        return "volume7z"
-                self.add_log(str(e2))
-            self.add_log(str(e))
-            if "Password is required for extracting given archive." in str(e):
-                return ".7z"
-        if self.PK_checkzip(filepath):
-            self.add_log("Attention!It's a obscure match!")
-            return "volumezip"
+
     def GetStart(self,filepath,ungzip_call_password_method=None,gzip_call_password_method=None,gzip_call_gziptype=None):
         self.add_log("Max thread is "+str(self.maxThread))
         self.gzip_call_gziptype=gzip_call_gziptype
@@ -119,6 +98,7 @@ class Core():
         else:
             self.add_log("Start ungzip now...")
             self.unzip(filepath)
+
     def unzip(self,filepath):
         self.filepath=filepath
         ext=os.path.splitext(filepath)[-1] 
@@ -583,6 +563,7 @@ class Core():
     def unVolumeZip(self,zip_file_path,pwd=None,target_path=None):
         self.unzipfile(zip_file_path,pwd,target_path)
         os.unlink(zip_file_path)
+
     def unzipfile(self,zip_file_path,pwd=None,target_path=None):
         if target_path == None:
             target_path=os.path.dirname(zip_file_path)
@@ -590,6 +571,7 @@ class Core():
         self.processingEvents()
         aes_zip_file=self.support_gbk(AESZipFile(file=zip_file_path))
         zip_list = zip_file.namelist()
+        self.processbar.setRange(1,len(zip_list))
         if pwd != None:
             try:
                 callback=self.ck4_zip_password(zip_file,pwd.encode("utf-8"))
@@ -608,10 +590,12 @@ class Core():
                     myThread = Thread(target=zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
                     myThread.start()
                     self.add_log("Extract "+f)
+                    self.processbar.setValue(self.processbar.value()+1)
                 except Exception as e:
                     self.add_errorlog(str(e))
                     self.add_log("Don't worry,it will try to use AES-256 to ungzip it.")
                     self.add_log("Extract "+f)
+                    self.processbar.setValue(self.processbar.value()+1)
                     while activeCount() > self.maxThread:
                         self.processingEvents()
                     myThread = Thread(target=aes_zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
@@ -624,6 +608,7 @@ class Core():
                 myThread = Thread(target=zip_file.extract,args=(f,target_path))
                 myThread.start()
                 self.add_log("Extract "+f)
+                self.processbar.setValue(self.processbar.value()+1)
         while activeCount() != 1:
             self.processingEvents()
         self.add_log("All Successed!")

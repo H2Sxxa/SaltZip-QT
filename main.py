@@ -191,14 +191,14 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         
         if self.myMode == "解压":
             self.TaskLabel.setText("当前任务：解压")
-            self.myCoreOpearte=Core.Core(self.myCore,False,self.haspassword,self.ifsplit,self.myLog)
+            self.myCoreOpearte=Core.Core(self.myCore,False,self.haspassword,self.ifsplit,self.myLog,self.progressBar,self.TaskLabel)
             self.myCoreOpearte.maxThread=self.maxthread
             self.myCoreOpearte.setProcesssafe(app=app)
             self.myCoreOpearte.setRarlocation("rar.exe")
             self.myCoreOpearte.GetStart(QFileDialog.getOpenFileName(self,"选择解压文件",getcwd()),ungzip_call_password_method=self.callforapassword)
         elif self.myMode == "压缩":
             self.TaskLabel.setText("当前任务：压缩")
-            self.myCoreOpearte=Core.Core(self.myCore,True,self.haspassword,self.ifsplit,self.myLog)
+            self.myCoreOpearte=Core.Core(self.myCore,True,self.haspassword,self.ifsplit,self.myLog,self.progressBar,self.TaskLabel)
             self.myCoreOpearte.maxThread=self.maxthread
             self.myCoreOpearte.setProcesssafe(app=app)
             self.myCoreOpearte.setRarlocation("rar.exe")

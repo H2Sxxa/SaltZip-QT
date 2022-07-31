@@ -12,12 +12,15 @@
 - SaltZip以往所有格式支持
 - 安全的类JWT验证解压缩（TODO
 
-#TODO LIST
+# TODO LIST
  - 自定义压缩等级 
  - zip分卷压缩适配问题
  - Auth压缩
  - 断点续传（？
  - ...
+
+# FIX LIST
+ - BCJ2过滤器压缩包(对应7-zip极限压缩.7z)无法使用SaltZip Core解压，并且无法捕获异常
 
 # 功能
 
