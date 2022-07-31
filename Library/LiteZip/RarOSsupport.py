@@ -8,10 +8,12 @@ class RarOSsupport():
         self.logger=logger
     def cmdhandle(self,command):
         self.logger.infolog(self.RarLC+" "+command)
+        self.logger.infolog("线程已经启动，请等待完成")
         with popen(self.RarLC+" "+command) as pipe:
             msg=pipe.read()
             try:
-                self.logger.infolog(msg)
+                for amsg in msg.splitlines():
+                    self.logger.infolog(amsg)
             except:
                 pass
             return msg
@@ -20,11 +22,13 @@ class RarOSsupport():
             return self.cmdhandle(f"x -o+ -p{pwd} {location} {out}")
         else:
             return self.cmdhandle(f"x -o+ {location} {out}")
+
     def mkrar(self,location,out,pwd=None):
         if pwd != None:
             return self.cmdhandle(f"a -r -ep1 -o+ -p{pwd} \"{out}\" \"{location}\"")
         else:
             return self.cmdhandle(f"a -r -ep1 -o+ \"{out}\" \"{location}\"")
+
     def mkVolumerar(self,location,out,pwd=None,blocksize=None):
         if pwd != None:
             return self.cmdhandle(f"a -r -o+ -v{blocksize} -p{pwd} \"{out}\" \"{location}\"")

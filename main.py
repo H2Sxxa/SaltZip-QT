@@ -19,7 +19,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.myLog=myLog
         self.myCfg=LiteConfig.LiteConfig("Data/config/main.cfg",litelog=True,bindlog=self.myLog)
         #self.myLang=LiteConfig.LiteConfig("Data/lang/zh_cn.cfg",litelog=True,bindlog=self.myLog)
-        self.rar=RarOSsupport("rar.exe",self.myLog)
+        self.rarLocation=f"{getcwd()}/Data/rar.exe"
+        self.rar=RarOSsupport(self.rarLocation,self.myLog)
         self.m_flag=False
         self.passwordcache=""
         self.setupUi(self)
@@ -203,14 +204,14 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             self.myCoreOpearte=Core.Core(self.myCore,False,self.haspassword,self.ifsplit,self.myLog,self.progressBar,self.TaskLabel)
             self.myCoreOpearte.maxThread=self.maxthread
             self.myCoreOpearte.setProcesssafe(app=app)
-            self.myCoreOpearte.setRarlocation("rar.exe")
+            self.myCoreOpearte.setRarlocation(self.rarLocation)
             self.myCoreOpearte.GetStart(QFileDialog.getOpenFileName(self,"选择解压文件",getcwd()),ungzip_call_password_method=self.callforapassword)
         elif self.myMode == "压缩":
             self.TaskLabel.setText("当前任务：压缩")
             self.myCoreOpearte=Core.Core(self.myCore,True,self.haspassword,self.ifsplit,self.myLog,self.progressBar,self.TaskLabel)
             self.myCoreOpearte.maxThread=self.maxthread
             self.myCoreOpearte.setProcesssafe(app=app)
-            self.myCoreOpearte.setRarlocation("rar.exe")
+            self.myCoreOpearte.setRarlocation(self.rarLocation)
             self.callforisdir()
 
     def callforisdir(self):

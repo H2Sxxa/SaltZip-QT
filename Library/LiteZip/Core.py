@@ -516,6 +516,8 @@ class Core():
                 self.add_errorlog("ERROR PASSWORD")
                 return
         zip_list = zip_file.getnames()
+        self.processbar.reset()
+        self.processbar.setRange(1,len(zip_list))
         for f in zip_list:
             self.add_log("Extract "+f)
             while activeCount() > self.maxThread:
@@ -523,6 +525,7 @@ class Core():
             zip_file.reset()
             myThread=Thread(target=zip_file.extract,args=(target_path,[f]))
             myThread.start()
+            self.processbar.setValue(self.processbar.value()+1)
         while activeCount() != 1:
             self.processingEvents()
         zip_file.close()
@@ -575,6 +578,7 @@ class Core():
         self.processingEvents()
         aes_zip_file=self.support_gbk(AESZipFile(file=zip_file_path))
         zip_list = zip_file.namelist()
+        self.processbar.reset()
         self.processbar.setRange(1,len(zip_list))
         if pwd != None:
             try:
@@ -623,13 +627,16 @@ class Core():
         res=VolumeUtils.combinefile(self.removefileext(file_path))
         rf=TarFile(res)
         rf_list=rf.getnames()
+        self.processbar.reset()
+        self.processbar.setRange(1,len(rf_list))
         for f in rf_list:
-            self.add_log("Extract "+f)
             try:
                 while activeCount() > self.maxThread:
                     self.processingEvents()
                 myThread = Thread(target=rf.extract,args=(f,target_path))
                 myThread.start()
+                self.add_log("Extract "+f)
+                self.processbar.setValue(self.processbar.value()+1)
             except Exception as e:
                 self.add_errorlog(str(e))
                 self.add_log("May be it is a illegal archive")
@@ -637,6 +644,7 @@ class Core():
         while activeCount() != 1:
             self.processingEvents()
         self.add_log("All Successed!")
+        self.processbar.setValue(self.processbar.value()+1)
         rf.close()
         os.unlink(res)
 
@@ -646,6 +654,8 @@ class Core():
         try:
             rf = TarFile(file_path)
             rf_list=rf.getnames()
+            self.processbar.reset()
+            self.processbar.setRange(1,len(rf_list))
             for f in rf_list:
                 self.add_log("Extract "+f)
                 try:
@@ -653,6 +663,7 @@ class Core():
                         self.processingEvents()
                     myThread = Thread(target=rf.extract,args=(f,target_path))
                     myThread.start()
+                    self.processbar.setValue(self.processbar.value()+1)
                 except Exception as e:
                     self.add_log("May be it is a illegal archive")
                     break
@@ -665,11 +676,14 @@ class Core():
                 Thread(self.unVolumetarfile(file_path,target_path)).start()
                 return
             self.add_errorlog(str(e))
+
     def unrarfile(self,file_path,pwd=None,target_path=None):
         if target_path == None:
             target_path=os.path.dirname(file_path)
         zip_file = RarFile(file=file_path)
         zip_list = zip_file.namelist()
+        self.processbar.reset()
+        self.processbar.setRange(1,len(zip_list))
         if pwd != None:
             try:
                 zip_file.testrar(pwd=pwd)
@@ -681,15 +695,6 @@ class Core():
             self.add_log("Extract "+f)
             try:
                 if pwd != None:
-                    '''
-                    try:
-                        self.te_rar(zip_file,f,target_path,pwd=pwd)
-                    except Exception as e:
-                        if ...
-                        self.add_log("Test extract error,turn to ROS")
-                        self.rar.extractrar(file_path,target_path,pwd=pwd)
-                        return
-                    '''
                     while activeCount() > self.maxThread:
                         self.processingEvents()
                     myThread = Thread(target=zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
@@ -699,6 +704,7 @@ class Core():
                         self.processingEvents()
                     myThread = Thread(target=zip_file.extract,args=(f,target_path))
                     myThread.start()
+                self.processbar.setValue(self.processbar.value()+1)
             except Exception as e:
                 self.add_errorlog(str(e))
                 self.add_log("May be it is a illegal archive,dont worry,it will use unrar.exe to handle it")
@@ -723,12 +729,6 @@ class Core():
             with SevenZipFile(target_archive, 'r') as archive:
                 return archive.needs_password()
     def check_rar(self,mfile: str) -> bool:
-        '''
-        name: 
-        des: 检测rar格式压缩包是否加密
-        param {传入的文件名}
-        return {True:文件加密 False:文件没加密}
-        '''
         rf = RarFile(mfile)
         return rf.needs_password()
     def check_zip(self,mfile: str) -> bool:
@@ -741,7 +741,6 @@ class Core():
                 return False
     def support_gbk(self,zip_file: ZipFile):
         name_to_info = zip_file.NameToInfo
-        # copy map first
         for name, info in name_to_info.copy().items():
             try:
                 real_name = name.encode('cp437')
@@ -754,10 +753,8 @@ class Core():
                 del name_to_info[name]
                 name_to_info[real_name] = info
         return zip_file
-    @timeout(2)
-    def te_rar(self,IRarfile:RarFile,f,tp,pwd) -> bool:
-        IRarfile.extract(f,tp,pwd=pwd)
-    @timeout(2)
+
+    @timeout(1)
     def ck4_zip(self,mfile:str) -> bool:
         with ZipFile(mfile) as f:
             try:
@@ -768,7 +765,8 @@ class Core():
                     return True
                 else:
                     return False
-    @timeout(2)
+
+    @timeout(1)
     def ck4_zip_password(self,zipfile:ZipFile,pwd:bytes) -> str:
         Izipfile=zipfile
         Izipfile.setpassword(pwd)
@@ -778,7 +776,7 @@ class Core():
         except Exception as e:
             return str(e)
         
-    @timeout(2)
+    @timeout(1)
     def det4_zip(self,mfile:str):
         ZipFile(mfile).testzip()
     
