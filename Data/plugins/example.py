@@ -1,0 +1,1 @@
+self.myLog.infolog("Hello Plugin")

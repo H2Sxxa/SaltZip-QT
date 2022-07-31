@@ -1,6 +1,7 @@
 import sys
 import ctypes
 from os import getcwd,environ, system,listdir,popen
+from os import walk,path
 from PyQt5.QtWidgets import QApplication, QMainWindow,QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor,QIcon
@@ -65,14 +66,23 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             except Exception as e:
                 self.myLog.errorlog(str(e))
     def startup(self):
-        for script in listdir("Data/startup"):
-            self.myLog.infolog("插件数量 %s"%len(listdir("Data/startup")))
-            try:
-                with open("Data/startup/%s" % script,"r",encoding="utf-8") as s:
-                    self.myLog.infolog("加载插件 %s" % "Data/startup/%s" % script)
-                    exec(s.read())
-            except Exception as e:
-                self.myLog.errorlog(str(e))
+        files_len=0
+        for roots,dirs,scripts in walk("Data\\plugins", topdown=False):
+            for script in scripts:
+                if path.splitext(script)[-1] != ".py":
+                    scripts.remove(script)
+            files_len=files_len+len(scripts)
+        self.myLog.infolog("插件数量 %s"%files_len)
+        for roots,dirs,scripts in walk("Data\\plugins", topdown=False):
+            for script in scripts:
+                try:
+                    if path.splitext(script)[-1] != ".py":
+                        continue
+                    with open(path.join(roots,script),"r",encoding="utf-8") as s:
+                        self.myLog.infolog("加载插件 %s" % path.join(roots,script))
+                        exec(s.read())
+                except Exception as e:
+                    self.myLog.errorlog(str(e))
     def loadQSS(self):
         try:
             with open(QFileDialog.getOpenFileName(self,"选择QSS样式表",getcwd())[0],"r",encoding="utf-8") as f:
@@ -187,8 +197,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.myLog.infolog("Core is "+self.myCore+";Mode is "+self.myMode)
         self.haspassword=self.hasPassword.isChecked()
         self.ifsplit=self.isSplit.isChecked()
-        self.myLog.infolog("split mode:"+str(self.ifsplit)+";has password:"+str(self.haspassword))
-        
+        self.myLog.infolog("split mode ->"+str(self.ifsplit)+" & has password ->"+str(self.haspassword))
         if self.myMode == "解压":
             self.TaskLabel.setText("当前任务：解压")
             self.myCoreOpearte=Core.Core(self.myCore,False,self.haspassword,self.ifsplit,self.myLog,self.progressBar,self.TaskLabel)
@@ -203,6 +212,7 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             self.myCoreOpearte.setProcesssafe(app=app)
             self.myCoreOpearte.setRarlocation("rar.exe")
             self.callforisdir()
+
     def callforisdir(self):
         self.wcb=WigetCombobox.WigetCombobox("选择模式",ChoiceList=["选择文件夹","选择文件"],calllog=self.myLog,callmethod=self.getisdir,color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wcb.show()

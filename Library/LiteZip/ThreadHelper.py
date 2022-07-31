@@ -1,7 +1,5 @@
 import threading
-
 import py7zr
-
 from Library.Quet.lite.LiteLog import LiteLog
 
 class ResThread(threading.Thread):
@@ -16,6 +14,7 @@ class ResThread(threading.Thread):
             return self.result
         except Exception as e:
             return str(e)
+        
 class ThreadHooker:
     def __init__(self,Logger:LiteLog) -> None:
         self.Logger=Logger
