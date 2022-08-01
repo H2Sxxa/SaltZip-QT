@@ -1,6 +1,7 @@
 from tarfile import TarFile,is_tarfile
 import tarfile
 from threading import Thread,activeCount
+import zipfile
 import multivolumefile
 from pyzipper import AESZipFile
 from zipencrypt import ZipFile as ENCZipFile
@@ -37,10 +38,27 @@ class Core():
         
     def setProcesssafe(self,app):
         self.processingEvents=app.processEvents
-    
-    def ThreadHooker(self):
-        pass
-    
+    def detect_haspassword(self,ext,filepath):
+        if ext == ".tar":
+            return False
+        if ext == ".zip":
+            try:
+                self.det4_zip(filepath)
+            except:
+                if "password required for extraction" in str(e):
+                    return True
+                else:
+                    return False
+        if ext == ".7z":
+            try:
+                self.det4_zip(filepath)
+            except:
+                if "password required for extraction" in str(e):
+                    return True
+                else:
+                    return False
+        if ext == ".rar":
+            pass
     def detect_ziptype(self,filepath):
         self.processbar.setRange(0,0)
         self.taskLabel.setText("当前任务：分析")
@@ -55,26 +73,24 @@ class Core():
                 self.det4_zip(filepath)
                 return ".zip"
             except Exception as e:
-                self.add_log(str(e))
-                if "password required for extraction" in str(e):
+                if "password required for extraction" in str(e) or "timed out" in str(e):
                     return ".zip"
+                self.add_log(str(e))
             try:
-                SevenZipFile(filepath).testzip()
+                self.ck4_7z(filepath)
                 return ".7z"
             except Exception as e:
+                if "Password is required for extracting given archive." in str(e) or "timed out" in str(e):
+                    return ".7z"
                 if "invalid header data" in str(e):
                     try:
-                        with multivolumefile.open(filepath.replace(self.trueext,"",-1), mode='rb') as target_archive:
-                            with SevenZipFile(target_archive, 'r') as archive:
-                                archive.testzip()
-                                return "volume7z"
+                        self.ck4_v7z(filepath)
+                        return "volume7z"
                     except Exception as e2:
-                        if "Password is required for extracting given archive." in str(e2):
+                        if "Password is required for extracting given archive." in str(e2) or "timed out" in str(e):
                             return "volume7z"
                     self.add_log(str(e2))
                 self.add_log(str(e))
-                if "Password is required for extracting given archive." in str(e):
-                    return ".7z"
             if self.PK_checkzip(filepath):
                 self.add_log("Attention!It's a obscure match!")
                 return "volumezip"
@@ -150,7 +166,6 @@ class Core():
                     try:
                         tzipP=self.ck4_zip(filepath)
                     except Exception as e:
-                        self.add_log(str(e))
                         tzipP=False
                     if tzipP or self.check_zip(filepath):
                         self.ungzip_call_password_method()
@@ -510,22 +525,26 @@ class Core():
         else:
             zip_file = SevenZipFile(zip_file_path,password=pwd)
             try:
-                zip_file.testzip()
-            except Exception as e:
-                self.add_errorlog(str(e))
-                self.add_errorlog("ERROR PASSWORD")
-                return
+                Expct=self.ck4_7z_password(zip_file_path,pwd=pwd)
+                if "Corrupt input data" in Expct:
+                    self.add_errorlog("ERROR PASSWORD")
+                    return
+            except:
+                pass
         zip_list = zip_file.getnames()
+        timmer=1
+        lenziplist=len(zip_list)
         self.processbar.reset()
-        self.processbar.setRange(1,len(zip_list))
+        self.processbar.setRange(1,len(lenziplist))
         for f in zip_list:
-            self.add_log("Extract "+f)
+            self.add_log("[ %s | %s ] Extract %s" % (timmer,lenziplist,f))
             while activeCount() > self.maxThread:
                 self.processingEvents()
             zip_file.reset()
             myThread=Thread(target=zip_file.extract,args=(target_path,[f]))
             myThread.start()
             self.processbar.setValue(self.processbar.value()+1)
+            timmer+=1
         while activeCount() != 1:
             self.processingEvents()
         zip_file.close()
@@ -551,11 +570,13 @@ class Core():
             with multivolumefile.open(self.removefileext(zip_file_path), mode='rb') as target_archive:
                 with SevenZipFile(target_archive, 'r',password=pwd) as zip_file:
                     try:
-                        zip_file.testzip()
-                    except Exception as e:
-                        self.add_errorlog(str(e))
-                        self.add_errorlog("ERROR PASSWORD")
-                        return
+                        expt=self.simple_ck4_v7z_password(zip_file)
+                        if "Corrupt input data" in expt:
+                            self.add_errorlog(expt)
+                            self.add_errorlog("ERROR PASSWORD")
+                            return
+                    except:
+                        pass
                     zip_list = zip_file.getnames()
                     for f in zip_list:
                         self.add_log("Extract "+f)
@@ -567,6 +588,7 @@ class Core():
                     while activeCount() != 1:
                         self.processingEvents()
                     self.add_log("All Successed!")
+
     def unVolumeZip(self,zip_file_path,pwd=None,target_path=None):
         self.unzipfile(zip_file_path,pwd,target_path)
         os.unlink(zip_file_path)
@@ -578,8 +600,10 @@ class Core():
         self.processingEvents()
         aes_zip_file=self.support_gbk(AESZipFile(file=zip_file_path))
         zip_list = zip_file.namelist()
+        timmer=1
+        lenziplist=len(zip_list)
         self.processbar.reset()
-        self.processbar.setRange(1,len(zip_list))
+        self.processbar.setRange(1,lenziplist)
         if pwd != None:
             try:
                 callback=self.ck4_zip_password(zip_file,pwd.encode("utf-8"))
@@ -597,12 +621,12 @@ class Core():
                         self.processingEvents()
                     myThread = Thread(target=zip_file.extract,args=(f,target_path,pwd.encode("utf-8")))
                     myThread.start()
-                    self.add_log("Extract "+f)
+                    self.add_log("[ %s | %s ] Extract %s" % (timmer,lenziplist,f))
                     self.processbar.setValue(self.processbar.value()+1)
                 except Exception as e:
                     self.add_errorlog(str(e))
                     self.add_log("Don't worry,it will try to use AES-256 to ungzip it.")
-                    self.add_log("Extract "+f)
+                    self.add_log("[ %s | %s ] Extract %s" % (timmer,lenziplist,f))
                     self.processbar.setValue(self.processbar.value()+1)
                     while activeCount() > self.maxThread:
                         self.processingEvents()
@@ -615,8 +639,9 @@ class Core():
                     self.processingEvents()
                 myThread = Thread(target=zip_file.extract,args=(f,target_path))
                 myThread.start()
-                self.add_log("Extract "+f)
+                self.add_log("[ %s | %s ] Extract %s" % (timmer,lenziplist,f))
                 self.processbar.setValue(self.processbar.value()+1)
+                timmer+=1
         while activeCount() != 1:
             self.processingEvents()
         self.add_log("All Successed!")
@@ -682,8 +707,10 @@ class Core():
             target_path=os.path.dirname(file_path)
         zip_file = RarFile(file=file_path)
         zip_list = zip_file.namelist()
+        timmer=1
+        lenziplist=len(zip_list)
         self.processbar.reset()
-        self.processbar.setRange(1,len(zip_list))
+        self.processbar.setRange(1,lenziplist)
         if pwd != None:
             try:
                 zip_file.testrar(pwd=pwd)
@@ -692,7 +719,7 @@ class Core():
                 self.add_errorlog("ERROR PASSWORD")
                 return
         for f in zip_list:
-            self.add_log("Extract "+f)
+            self.add_log("[ %s | %s ] Extract %s" % (timmer,lenziplist,f))
             try:
                 if pwd != None:
                     while activeCount() > self.maxThread:
@@ -753,7 +780,29 @@ class Core():
                 del name_to_info[name]
                 name_to_info[real_name] = info
         return zip_file
-
+    @timeout(1)
+    def ck4_v7z(self,mfile) -> bool:
+        with multivolumefile.open(mfile.replace(self.trueext,"",-1), mode='rb') as target_archive:
+            with SevenZipFile(target_archive, 'r') as archive:
+                try:
+                    archive.testzip()
+                    return False
+                except Exception as e:
+                    if "Password is required for extracting given archive." in str(e):
+                        return True
+                    else:
+                        return False
+    @timeout(1)
+    def ck4_7z(self,mfile) -> bool:
+        with SevenZipFile(mfile) as f:
+            try:
+                f.testzip()
+                return False
+            except Exception as e:
+                if "Password is required for extracting given archive." in str(e):
+                    return True
+                else:
+                    return False
     @timeout(1)
     def ck4_zip(self,mfile:str) -> bool:
         with ZipFile(mfile) as f:
@@ -765,7 +814,22 @@ class Core():
                     return True
                 else:
                     return False
-
+    @timeout(1)
+    def simple_ck4_v7z_password(self,archive:SevenZipFile):
+        try:
+            archive.testzip()
+            return "Correct Password!"
+        except Exception as e:
+            return str(e)
+    @timeout(1)
+    def ck4_v7z_password(self,mfile,pwd:str) -> bool:
+        with multivolumefile.open(mfile.replace(self.trueext,"",-1), mode='rb') as target_archive:
+            with SevenZipFile(target_archive, 'r',password=pwd) as archive:
+                try:
+                    archive.testzip()
+                    return "Correct Password!"
+                except Exception as e:
+                    return str(e)
     @timeout(1)
     def ck4_zip_password(self,zipfile:ZipFile,pwd:bytes) -> str:
         Izipfile=zipfile
@@ -775,7 +839,15 @@ class Core():
             return "Correct Password!"
         except Exception as e:
             return str(e)
-        
+
+    @timeout(1)
+    def ck4_7z_password(self,mfile,pwd:str) -> str:
+        with SevenZipFile(mfile,password=pwd) as Izipfile:
+            try:
+                Izipfile.testzip()
+                return "Correct Password!"
+            except Exception as e:
+                return str(e)
     @timeout(1)
     def det4_zip(self,mfile:str):
         ZipFile(mfile).testzip()

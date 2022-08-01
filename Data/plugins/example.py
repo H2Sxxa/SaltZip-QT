@@ -1,1 +1,1 @@
-self.myLog.infolog("Hello Plugin")
+#self.myLog.infolog("Hello Plugin")

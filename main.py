@@ -33,6 +33,8 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             self.myLog.errorlog(e)
         self.TaskLabel.setText("当前任务：启动")
         self.myLog.bindQTlog(self.LogText)
+        #Just inf
+        self.InfCore=Core.Core(bindlog=self.myLog,processbar=self.progressBar,taskLabel=self.TaskLabel)
         #bind Menu
         self.MenuLoadQSS.triggered.connect(self.loadQSS)
         self.Menuexec.triggered.connect(self.execInf)
@@ -46,11 +48,13 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
         self.MenuSponsor.triggered.connect(self.sponsor)
         self.MenuExit.triggered.connect(self.choseVerify)
         self.MenuDebug.triggered.connect(self.debugon)
+        self.MenuParse.triggered.connect(self.ParseFile)
         self.FixRar.triggered.connect(lambda:self.rar.fixrar(QFileDialog.getOpenFileName(self,"选择压缩包",getcwd())[0],self.myLog,QFileDialog.getExistingDirectory(self,"保存压缩包(取消则默认保存在程序目录)",getcwd())))
         self.MenuwtLog.triggered.connect(lambda:myLog.write_cache_log(QFileDialog.getExistingDirectory(self,"选择日志输出目录",getcwd()),True))
         #button
         self.ExitBT.clicked.connect(self.choseVerify)
         self.BTcontinue.clicked.connect(self.loadAll)
+        self.BTParse.clicked.connect(self.ParseFile)
         #info
         self.wmb=WigetMessagebox.WigetMessagebox(["此版本为Beta版本","如遇BUG,前往https://github.com/IAXRetailer/SaltZip-QT/issues反馈"],title="警告",color=environ["QTMATERIAL_PRIMARYCOLOR"])
         self.wmb.show()
@@ -358,6 +362,22 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
                 self.myLog.errorlog(str(e))
                 if "Bad password" in str(e):
                     self.myLog.errorlog("ERROR Password")
+    def ParseFile(self):
+        filepath=QFileDialog.getOpenFileName(self,"选择文件",getcwd())[0]
+        try:
+            FileFormat=self.InfCore.detect_ziptype(filepath)
+        except Exception as e:
+            self.myLog.errorlog(str(e))
+            return
+        self.myLog.infolog("Detect as %s"%FileFormat)
+        self.progressBar.setRange(0,1)
+        self.progressBar.setValue(1)
+        self.TaskLabel.setText("当前任务：完成")
+        self.FileInfo.clear()
+        self.FileInfo.append("分析报告:")
+        self.FileInfo.append(" - 文件路径: %s"%filepath)
+        self.FileInfo.append(" - 侦测为: %s"%FileFormat)
+        self.FileInfo.append(" - 侦测为: %s"%FileFormat)
 if __name__ == '__main__':
     try:
         QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)

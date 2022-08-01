@@ -104,7 +104,7 @@
      </widget>
     </item>
     <item row="23" column="1">
-     <widget class="QPushButton" name="BTcancel">
+     <widget class="QPushButton" name="BTParse">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -237,7 +237,7 @@
     <addaction name="MenuExitFullScreen"/>
     <addaction name="separator"/>
     <addaction name="MenuwtLog"/>
-    <addaction name="MenuOpen"/>
+    <addaction name="MenuParse"/>
     <addaction name="MenuExit"/>
    </widget>
    <widget class="QMenu" name="menu_2">
@@ -279,7 +279,7 @@
     <string>赞助</string>
    </property>
   </action>
-  <action name="MenuOpen">
+  <action name="MenuParse">
    <property name="text">
     <string>分析</string>
    </property>
