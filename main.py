@@ -62,8 +62,12 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
             self.myCfg.saveCfg()
         else:
             self.myCfg.loadCfg()
+            
             try:
-                apply_stylesheet(app,theme=self.myCfg.readCfg("theme"))
+                if "[customtheme]:" not in self.myCfg.readCfg("theme"):
+                    apply_stylesheet(app,theme=self.myCfg.readCfg("theme"))
+                else:
+                    app.setStyleSheet(open(self.myCfg.readCfg("theme").replace("[customtheme]:",""),"r").read())
             except Exception as e:
                 self.myLog.errorlog(str(e))
     def startup(self):
@@ -86,12 +90,15 @@ class SALTZIP(QMainWindow,Ui_MainWindow):
                     self.myLog.errorlog(str(e))
     def loadQSS(self):
         try:
-            with open(QFileDialog.getOpenFileName(self,"选择QSS样式表",getcwd())[0],"r",encoding="utf-8") as f:
+            qsspath=QFileDialog.getOpenFileName(self,"选择QSS样式表","%s/Data/theme"%getcwd())[0]
+            with open(qsspath,"r",encoding="utf-8") as f:
                 qss=f.read()
             app.setStyleSheet(qss)
-            self.myLog.infolog("success")
+            self.myLog.infolog("success load %s" % qsspath)
+            self.myCfg.modifyCfg("theme","[customtheme]:%s"%qsspath)
         except Exception as e:
             self.myLog.errorlog(str(e))
+            apply_stylesheet(app,theme='light_cyan_500.xml')
     def evalrun(self,string):
         if string == "":
             return
