@@ -535,7 +535,7 @@ class Core():
         timmer=1
         lenziplist=len(zip_list)
         self.processbar.reset()
-        self.processbar.setRange(1,len(lenziplist))
+        self.processbar.setRange(1,lenziplist)
         for f in zip_list:
             self.add_log("[ %s | %s ] Extract %s" % (timmer,lenziplist,f))
             while activeCount() > self.maxThread:
