@@ -1,5 +1,6 @@
 import threading
 import py7zr
+from py7zr import exceptions
 from Library.Quet.lite.LiteLog import LiteLog
 
 class ResThread(threading.Thread):
@@ -25,5 +26,7 @@ class ThreadHooker:
         self.exc_traceback=HookerInfo.exc_traceback
         self.thread=HookerInfo.thread
         self.Logger.errorlog(self.exc_value)
+        if self.exc_type == exceptions.CrcError:
+            self.Logger.errorlog("Crc校验错误 -> 密码错误")
         if self.exc_type == py7zr.UnsupportedCompressionMethodError:
             self.Logger.errorlog("不支持的文件压缩方式,建议使用7zip Core")
